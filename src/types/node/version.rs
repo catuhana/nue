@@ -4,7 +4,6 @@ use semver::Version;
 
 #[derive(Clone, Debug)]
 pub enum NodeVersion {
-    #[allow(dead_code)] // Will be used later.
     Semver(Version),
     Latest,
     Lts,

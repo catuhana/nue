@@ -1,4 +1,5 @@
-pub mod install;
+mod install;
+mod list;
 
 use clap::{Args, Parser, Subcommand};
 
@@ -19,4 +20,6 @@ pub struct Cli {
 pub enum Subcommands {
     /// Install Node.
     Install(install::CommandArguments),
+    /// List all available Node versions.
+    List(list::CommandArguments),
 }

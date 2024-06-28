@@ -1,12 +1,12 @@
 use clap::Args;
 
 use super::NueCommand;
-use crate::types::node_version::NodeVersion;
+use crate::types;
 
 #[derive(Args, Debug)]
 pub struct CommandArguments {
     /// Optional version of Node to install.
-    pub version: Option<NodeVersion>,
+    pub version: Option<types::node::Version>,
 }
 
 impl NueCommand for CommandArguments {
