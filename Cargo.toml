@@ -8,3 +8,4 @@ rust-version = "1.79.0"
 [dependencies]
 anyhow = "1.0.86"
 clap = { version = "4.5.8", features = ["derive"] }
+semver = "1.0.23"
