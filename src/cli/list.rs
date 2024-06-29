@@ -4,65 +4,80 @@ use crate::types;
 
 use super::NueCommand;
 
+#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
+enum VersionInputs {
+    VersionString(String),
+    #[default]
+    All,
+    Lts(Option<String>),
+}
+
 #[derive(Args, Debug)]
 pub struct CommandArguments {
     /// List all available versions of a specific one.
-    version: Option<types::node::Version>,
+    #[arg(default_value_t = VersionInputs::default())]
+    version: VersionInputs,
 
-    /// Show all releases, no matter if current machine supports it or not.
+    /// Show the latest version.
     #[arg(long)]
-    all: bool,
+    latest: bool,
 
-    /// List LTS only releases
+    /// List all versions no matter if the current system is supported or not.
     #[arg(long)]
-    lts: bool,
+    list_all: bool,
 }
 
 impl NueCommand for CommandArguments {
     type Arguments = Self;
 
     fn run(&self) -> anyhow::Result<()> {
-        let response: Vec<types::node::Release> =
+        if matches!(self.version, VersionInputs::VersionString(_) | VersionInputs::Lts(Some(_)) if self.latest)
+        {
+            anyhow::bail!(
+                "The `--latest` flag cannot be used when a specific version is specified."
+            );
+        }
+
+        let releases_json: Vec<types::node::Release> =
             ureq::get("https://nodejs.org/download/release/index.json")
                 .call()?
                 .into_json()?;
 
-        let releases = match &self.version {
-            Some(version) => match version {
-                types::node::Version::Semver(version) => response
-                    .into_iter()
-                    .filter(|release| format!("{}", release.version).starts_with(version))
-                    .collect::<Vec<_>>(),
-                types::node::Version::Latest => response
-                    .iter()
-                    .max_by_key(|release| &release.version)
-                    .map_or_else(Vec::new, |max| vec![max.clone()]),
-                types::node::Version::Lts => {
-                    anyhow::bail!("Use the `--lts` flag to list LTS releases")
-                }
-            },
-            None => {
-                if self.lts {
-                    response
-                        .into_iter()
-                        .filter(|release| matches!(release.lts, types::node::LTS::CodeName(_)))
-                        .collect()
-                } else if self.all {
-                    response
-                } else {
-                    let current_platform =
-                        types::platforms::Platform::get_system_platform().to_string();
-                    response
-                        .into_iter()
-                        .filter(|release| release.files.contains(&current_platform))
-                        .collect()
-                }
-            }
+        let mut releases = match &self.version {
+            VersionInputs::VersionString(version) => releases_json
+                .into_iter()
+                .filter(|release| format!("{}", release.version).starts_with(version))
+                .collect(),
+            VersionInputs::Lts(Some(code_name)) => releases_json
+                .into_iter()
+                .filter(|release| {
+                    matches!(&release.lts, types::node::LTS::CodeName(name) if *name.to_lowercase() == *code_name)
+                })
+                .collect(),
+            VersionInputs::Lts(None) => releases_json
+                .into_iter()
+                .filter(|release| matches!(release.lts, types::node::LTS::CodeName(_)))
+                .collect(),
+            VersionInputs::All => releases_json,
         };
 
-        if releases.is_empty() {
-            anyhow::bail!("Version not found");
+        if !self.list_all {
+            let current_platform = types::platforms::Platform::get_system_platform().to_string();
+            releases.retain(|release| release.files.contains(&current_platform));
+        }
+
+        if self.latest {
+            let latest_version = &releases
+                .first()
+                .expect("release not found, somehow.")
+                .version;
+
+            println!("v{latest_version}");
+        } else if releases.is_empty() {
+            anyhow::bail!("Specified version not found.");
         } else {
+            // TODO: if `--list-all` is passed, append `(not supported by current system)`
+            // aside the version string.
             println!("{}", print_version_tree(&releases));
         }
 
@@ -103,13 +118,43 @@ fn print_version_tree(releases: &[types::node::Release]) -> String {
             ));
         }
 
-        if release.version.patch > 0 {
-            tree_string.push_str(&format!(
-                "    - v{}.{}.{}\n",
-                release.version.major, release.version.minor, release.version.patch
-            ));
-        }
+        tree_string.push_str(&format!(
+            "    - v{}.{}.{}\n",
+            release.version.major, release.version.minor, release.version.patch
+        ));
     }
 
     tree_string
+}
+
+impl std::fmt::Display for VersionInputs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::VersionString(version) => write!(f, "{}", version),
+            Self::All => write!(f, "all"),
+            Self::Lts(Some(code_name)) => write!(f, "{}", code_name),
+            Self::Lts(None) => write!(f, "lts"),
+        }
+    }
+}
+
+impl std::str::FromStr for VersionInputs {
+    type Err = anyhow::Error;
+
+    fn from_str(str: &str) -> Result<Self, Self::Err> {
+        match str {
+            "all" => Ok(Self::All),
+            "lts" => Ok(Self::Lts(None)),
+            _ if (str.starts_with('v') && str[2..].parse::<u8>().is_ok())
+                || str[1..].parse::<u8>().is_ok() =>
+            {
+                Ok(Self::VersionString(
+                    str.strip_prefix('v')
+                        .map_or(str, |stripped_str| stripped_str)
+                        .to_string(),
+                ))
+            }
+            _ => Ok(Self::Lts(Some(str.to_lowercase()))),
+        }
+    }
 }
