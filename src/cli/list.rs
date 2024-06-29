@@ -7,7 +7,7 @@ use super::NueCommand;
 #[derive(Args, Debug)]
 pub struct CommandArguments {
     /// List all available versions of a specific one.
-    version: Option<String>,
+    version: Option<types::node::Version>,
 
     /// Show all releases, no matter if current machine supports it or not.
     #[arg(long)]
@@ -28,10 +28,10 @@ impl NueCommand for CommandArguments {
                 .into_json()?;
 
         let releases = match &self.version {
-            Some(version) => match version.parse::<types::node::Version>()? {
+            Some(version) => match version {
                 types::node::Version::Semver(version) => response
                     .into_iter()
-                    .filter(|release| format!("{}", release.version).starts_with(&version))
+                    .filter(|release| format!("{}", release.version).starts_with(version))
                     .collect::<Vec<_>>(),
                 types::node::Version::Latest => response
                     .iter()
