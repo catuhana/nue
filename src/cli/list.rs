@@ -15,7 +15,7 @@ pub struct CommandArguments {
 
     /// List LTS only releases
     #[arg(long)]
-    lts_only: bool,
+    lts: bool,
 }
 
 impl NueCommand for CommandArguments {
@@ -38,11 +38,11 @@ impl NueCommand for CommandArguments {
                     .max_by_key(|release| &release.version)
                     .map_or_else(Vec::new, |max| vec![max.clone()]),
                 types::node::Version::Lts => {
-                    anyhow::bail!("Use the `--lts-only` flag to list LTS releases")
+                    anyhow::bail!("Use the `--lts` flag to list LTS releases")
                 }
             },
             None => {
-                if self.lts_only {
+                if self.lts {
                     response
                         .into_iter()
                         .filter(|release| matches!(release.lts, types::node::LTS::CodeName(_)))
