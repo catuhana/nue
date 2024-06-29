@@ -6,6 +6,10 @@ use super::NueCommand;
 
 #[derive(Args, Debug)]
 pub struct CommandArguments {
+    /// Show all releases, no matter if current machine supports it or not.
+    #[arg(long)]
+    all: bool,
+
     /// List LTS only releases
     #[arg(long)]
     lts_only: bool,
@@ -20,18 +24,21 @@ impl NueCommand for CommandArguments {
                 .call()?
                 .into_json()?;
 
-        let releases: Vec<types::node::Release>;
-        if self.lts_only {
-            releases = response
+        let releases: Vec<types::node::Release> = if self.lts_only {
+            response
                 .into_iter()
-                .filter(|release| match &release.lts {
-                    types::node::LTS::CodeName(_code_name) => true,
-                    _ => false,
-                })
-                .collect();
+                .filter(|release| matches!(release.lts, types::node::LTS::CodeName(_)))
+                .collect()
+        } else if self.all {
+            response
         } else {
-            releases = response;
-        }
+            let current_platform = types::platforms::Platform::get_system_platform();
+
+            response
+                .into_iter()
+                .filter(|release| release.files.contains(&current_platform.to_string()))
+                .collect()
+        };
 
         println!("{}", print_version_tree(&releases));
 
