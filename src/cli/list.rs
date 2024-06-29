@@ -74,7 +74,7 @@ impl NueCommand for CommandArguments {
 
             println!("v{latest_version}");
         } else if releases.is_empty() {
-            anyhow::bail!("Specified version not found.");
+            anyhow::bail!("No release found with given version or LTS code name.");
         } else {
             // TODO: if `--list-all` is passed, append `(not supported by current system)`
             // aside the version string.
