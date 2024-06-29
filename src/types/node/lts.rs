@@ -1,6 +1,6 @@
 use serde::{de::Visitor, Deserialize, Deserializer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum NodeLTS {
     CodeName(String),
     Bool(bool),

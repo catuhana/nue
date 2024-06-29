@@ -6,6 +6,9 @@ use super::NueCommand;
 
 #[derive(Args, Debug)]
 pub struct CommandArguments {
+    /// List all available versions of a specific one.
+    version: Option<String>,
+
     /// Show all releases, no matter if current machine supports it or not.
     #[arg(long)]
     all: bool,
@@ -24,23 +27,44 @@ impl NueCommand for CommandArguments {
                 .call()?
                 .into_json()?;
 
-        let releases: Vec<types::node::Release> = if self.lts_only {
-            response
-                .into_iter()
-                .filter(|release| matches!(release.lts, types::node::LTS::CodeName(_)))
-                .collect()
-        } else if self.all {
-            response
-        } else {
-            let current_platform = types::platforms::Platform::get_system_platform();
-
-            response
-                .into_iter()
-                .filter(|release| release.files.contains(&current_platform.to_string()))
-                .collect()
+        let releases = match &self.version {
+            Some(version) => match version.parse::<types::node::Version>()? {
+                types::node::Version::Semver(version) => response
+                    .into_iter()
+                    .filter(|release| format!("{}", release.version).starts_with(&version))
+                    .collect::<Vec<_>>(),
+                types::node::Version::Latest => response
+                    .iter()
+                    .max_by_key(|release| &release.version)
+                    .map_or_else(Vec::new, |max| vec![max.clone()]),
+                types::node::Version::Lts => {
+                    anyhow::bail!("Use the `--lts-only` flag to list LTS releases")
+                }
+            },
+            None => {
+                if self.lts_only {
+                    response
+                        .into_iter()
+                        .filter(|release| matches!(release.lts, types::node::LTS::CodeName(_)))
+                        .collect()
+                } else if self.all {
+                    response
+                } else {
+                    let current_platform =
+                        types::platforms::Platform::get_system_platform().to_string();
+                    response
+                        .into_iter()
+                        .filter(|release| release.files.contains(&current_platform))
+                        .collect()
+                }
+            }
         };
 
-        println!("{}", print_version_tree(&releases));
+        if releases.is_empty() {
+            anyhow::bail!("Version not found");
+        } else {
+            println!("{}", print_version_tree(&releases));
+        }
 
         Ok(())
     }
