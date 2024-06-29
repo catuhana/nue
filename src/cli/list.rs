@@ -5,7 +5,11 @@ use crate::types;
 use super::NueCommand;
 
 #[derive(Args, Debug)]
-pub struct CommandArguments;
+pub struct CommandArguments {
+    /// List LTS only releases
+    #[arg(long)]
+    lts_only: bool,
+}
 
 impl NueCommand for CommandArguments {
     type Arguments = Self;
@@ -16,10 +20,18 @@ impl NueCommand for CommandArguments {
                 .call()?
                 .into_json()?;
 
-        let releases = response
-            .into_iter()
-            .map(|release| release)
-            .collect::<Vec<types::node::Release>>();
+        let releases: Vec<types::node::Release>;
+        if self.lts_only {
+            releases = response
+                .into_iter()
+                .filter(|release| match &release.lts {
+                    types::node::LTS::CodeName(_code_name) => true,
+                    _ => false,
+                })
+                .collect();
+        } else {
+            releases = response;
+        }
 
         println!("{}", print_version_tree(&releases));
 
