@@ -134,19 +134,17 @@ impl std::fmt::Display for VersionInputs {
 impl std::str::FromStr for VersionInputs {
     type Err = anyhow::Error;
 
-    fn from_str(str: &str) -> Result<Self, Self::Err> {
-        match str {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.to_lowercase();
+
+        match s.as_str() {
             "all" => Ok(Self::All),
             "lts" => Ok(Self::Lts(None)),
-            _ if (str.starts_with('v') && str[2..].parse::<u8>().is_ok()) => {
-                Ok(Self::VersionString(
-                    str.strip_prefix('v')
-                        .map_or(str, |stripped_str| stripped_str)
-                        .to_string(),
-                ))
+            _ if s.starts_with('v') && s[1..].parse::<u8>().is_ok() => {
+                Ok(Self::VersionString(s[1..].to_string()))
             }
-            _ if (str[1..].parse::<u8>().is_ok()) => Ok(Self::VersionString(str.to_string())),
-            _ => Ok(Self::Lts(Some(str.to_lowercase()))),
+            _ if (s.parse::<u8>().is_ok()) => Ok(Self::VersionString(s)),
+            _ => Ok(Self::Lts(Some(s))),
         }
     }
 }
