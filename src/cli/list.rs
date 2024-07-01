@@ -5,7 +5,7 @@ use crate::types;
 use super::NueCommand;
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
-enum VersionInputs {
+pub enum VersionInputs {
     VersionString(String),
     #[default]
     All,
@@ -138,15 +138,14 @@ impl std::str::FromStr for VersionInputs {
         match str {
             "all" => Ok(Self::All),
             "lts" => Ok(Self::Lts(None)),
-            _ if (str.starts_with('v') && str[2..].parse::<u8>().is_ok())
-                || str[1..].parse::<u8>().is_ok() =>
-            {
+            _ if (str.starts_with('v') && str[2..].parse::<u8>().is_ok()) => {
                 Ok(Self::VersionString(
                     str.strip_prefix('v')
                         .map_or(str, |stripped_str| stripped_str)
                         .to_string(),
                 ))
             }
+            _ if (str[1..].parse::<u8>().is_ok()) => Ok(Self::VersionString(str.to_string())),
             _ => Ok(Self::Lts(Some(str.to_lowercase()))),
         }
     }
