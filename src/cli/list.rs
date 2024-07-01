@@ -31,13 +31,6 @@ impl NueCommand for CommandArguments {
     type Arguments = Self;
 
     fn run(&self) -> anyhow::Result<()> {
-        if matches!(self.version, VersionInputs::VersionString(_) | VersionInputs::Lts(Some(_)) if self.latest)
-        {
-            anyhow::bail!(
-                "The `--latest` flag cannot be used when a specific version is specified."
-            );
-        }
-
         let releases_json: Vec<types::node::Release> =
             ureq::get("https://nodejs.org/download/release/index.json")
                 .call()?
