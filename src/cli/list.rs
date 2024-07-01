@@ -5,7 +5,7 @@ use crate::types;
 use super::NueCommand;
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum VersionInputs {
+enum VersionInputs {
     VersionString(String),
     #[default]
     All,
@@ -24,7 +24,7 @@ pub struct CommandArguments {
 
     /// List all versions no matter if the current system is supported or not.
     #[arg(long)]
-    list_all: bool,
+    list_unsupported: bool,
 }
 
 impl NueCommand for CommandArguments {
@@ -54,7 +54,7 @@ impl NueCommand for CommandArguments {
             VersionInputs::All => releases_json,
         };
 
-        if !self.list_all {
+        if !self.list_unsupported {
             let current_platform = types::platforms::Platform::get_system_platform().to_string();
             releases.retain(|release| release.files.contains(&current_platform));
         }
