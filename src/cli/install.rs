@@ -3,7 +3,7 @@ use std::{fmt, str};
 use clap::Args;
 
 use super::NueCommand;
-use crate::types;
+use crate::{exts::HyperlinkExt, types};
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum VersionInputs {
@@ -64,16 +64,19 @@ impl NueCommand for CommandArguments {
 
         match latest_release {
             Some(release) => {
+                let version_str = format!("v{}", release.version);
+                let branch_name = match release_branch {
+                    "latest" => "current",
+                    "LTS" => release_branch,
+                    _ => release_branch,
+                };
+
                 println!(
-                    "Installing version v{} from `{}` branch",
-                    release.version,
-                    if release_branch == "latest" {
-                        "current"
-                    } else if release_branch == "LTS" {
-                        release_branch
-                    } else {
-                        release_branch
-                    }
+                    "Installing version {} from `{}` branch",
+                    version_str.hyperlink(format!(
+                        "https://github.com/nodejs/node/releases/tag/{version_str}"
+                    )),
+                    branch_name
                 )
             }
             None => {

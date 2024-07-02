@@ -2,6 +2,7 @@ use clap::Parser;
 use cli::NueCommand;
 
 mod cli;
+mod exts;
 mod types;
 
 fn main() -> anyhow::Result<()> {
