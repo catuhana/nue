@@ -5,12 +5,12 @@ use super::LTS;
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct NodeRelease {
     #[serde(deserialize_with = "deserialise_version_v_prefix")]
-    pub version: semver::Version,
+    pub version: node_semver::Version,
     pub files: Vec<String>,
     pub lts: LTS,
 }
 
-fn deserialise_version_v_prefix<'de, D>(deserializer: D) -> Result<semver::Version, D::Error>
+fn deserialise_version_v_prefix<'de, D>(deserializer: D) -> Result<node_semver::Version, D::Error>
 where
     D: Deserializer<'de>,
 {
