@@ -69,8 +69,6 @@ impl NueCommand for CommandArguments {
         } else if releases.is_empty() {
             anyhow::bail!("No release found with given version or LTS code name.");
         } else {
-            // TODO: if `--list-all` is passed, append `(not supported by current system)`
-            // aside the version string.
             println!("{}", print_version_tree(&releases));
         }
 
@@ -112,11 +110,16 @@ fn print_version_tree(releases: &[types::node::Release]) -> String {
         }
 
         tree_string.push_str(&format!(
-            "    - {}\n",
+            "    - {}{}\n",
             format!("v{}", release.version).hyperlink(format!(
                 "https://github.com/nodejs/node/releases/tag/v{}",
                 release.version
-            ))
+            )),
+            if types::platforms::Platform::is_supported(&release.files) {
+                ""
+            } else {
+                " (unsupported)"
+            }
         ));
     }
 
