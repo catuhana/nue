@@ -259,7 +259,7 @@ dependencies = [
 [[package]]
 name = "node-semver"
 version = "2.1.1-alpha.0"
-source = "git+https://github.com/catuhana/node-semver-rs#e0cec6bfd1b9fc1606dfc6eabc50c4c2b6d8829e"
+source = "git+https://github.com/catuhana/node-semver-rs#96e50db519fd985d916ec860f12691530a4797b9"
 dependencies = [
  "bytecount",
  "miette",
