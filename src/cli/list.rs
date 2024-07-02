@@ -140,8 +140,6 @@ impl std::str::FromStr for VersionInputs {
         match s.as_str() {
             "all" => Ok(Self::All),
             "lts" => Ok(Self::Lts(None)),
-            // FIXME: Known bug: Create a custom semver parser, since `semver` crate doesn't
-            // default missing fields to `0`.
             _ if s.starts_with('v') && s[1..].parse::<node_semver::Range>().is_ok() => {
                 Ok(Self::VersionString(s[1..].to_string()))
             }
