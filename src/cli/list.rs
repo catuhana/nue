@@ -1,6 +1,6 @@
 use clap::Args;
 
-use crate::types;
+use crate::{exts::HyperlinkExt, types};
 
 use super::NueCommand;
 
@@ -95,7 +95,7 @@ fn print_version_tree(releases: &[types::node::Release]) -> String {
                 "v{}{}\n",
                 release.version.major,
                 match &release.lts {
-                    types::node::LTS::CodeName(code_name) => format!(" (LTS, {})", code_name),
+                    types::node::LTS::CodeName(code_name) => format!(" ({} LTS)", code_name),
                     types::node::LTS::Bool(_false) => "".to_string(),
                 }
             ));
@@ -112,8 +112,11 @@ fn print_version_tree(releases: &[types::node::Release]) -> String {
         }
 
         tree_string.push_str(&format!(
-            "    - v{}.{}.{}\n",
-            release.version.major, release.version.minor, release.version.patch
+            "    - {}\n",
+            format!("v{}", release.version).hyperlink(format!(
+                "https://github.com/nodejs/node/releases/tag/v{}",
+                release.version
+            ))
         ));
     }
 
