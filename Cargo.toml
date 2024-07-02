@@ -8,6 +8,6 @@ rust-version = "1.79.0"
 [dependencies]
 anyhow = "1.0.86"
 clap = { version = "4.5.8", features = ["derive"] }
-node-semver = "2.1.0"
+node-semver = { git = "https://github.com/catuhana/node-semver-rs" }
 serde = { version = "1.0.203", features = ["derive"] }
 ureq = { version = "2.9.7", features = ["json"] }
