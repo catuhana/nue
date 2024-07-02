@@ -1,8 +1,7 @@
-use std::{fmt, str};
-
 use clap::Args;
 
 use super::NueCommand;
+
 use crate::{exts::HyperlinkExt, types};
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -88,8 +87,8 @@ impl NueCommand for CommandArguments {
     }
 }
 
-impl fmt::Display for VersionInputs {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl ::std::fmt::Display for VersionInputs {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match self {
             Self::VersionString(version) => write!(f, "{}", version),
             Self::Latest => write!(f, "latest"),
@@ -99,7 +98,7 @@ impl fmt::Display for VersionInputs {
     }
 }
 
-impl std::str::FromStr for VersionInputs {
+impl ::std::str::FromStr for VersionInputs {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

@@ -19,7 +19,7 @@ struct NodeLTSVisitor;
 impl<'de> Visitor<'de> for NodeLTSVisitor {
     type Value = NodeLTS;
 
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         formatter.write_str("a string or a boolean")
     }
 

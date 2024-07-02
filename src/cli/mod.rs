@@ -1,7 +1,7 @@
+use clap::{Args, Parser, Subcommand};
+
 mod install;
 mod list;
-
-use clap::{Args, Parser, Subcommand};
 
 pub trait NueCommand {
     type Arguments: Args;

@@ -42,8 +42,8 @@ impl Platform {
     }
 }
 
-impl std::fmt::Display for Platform {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl ::std::fmt::Display for Platform {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match self {
             Self::Linux(arch) => write!(f, "linux-{}", arch),
         }
@@ -67,8 +67,8 @@ impl std::fmt::Display for Platform {
 //     }
 // }
 
-impl std::fmt::Display for Arch {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl ::std::fmt::Display for Arch {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match self {
             Self::ARM64 => write!(f, "arm64"),
             Self::ARMv7l => write!(f, "armv7l"),

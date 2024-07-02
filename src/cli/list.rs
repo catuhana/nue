@@ -1,8 +1,8 @@
 use clap::Args;
 
-use crate::{exts::HyperlinkExt, types};
-
 use super::NueCommand;
+
+use crate::{exts::HyperlinkExt, types};
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum VersionInputs {
@@ -123,8 +123,8 @@ fn print_version_tree(releases: &[types::node::Release]) -> String {
     tree_string
 }
 
-impl std::fmt::Display for VersionInputs {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl ::std::fmt::Display for VersionInputs {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match self {
             Self::VersionString(version) => write!(f, "{}", version),
             Self::All => write!(f, "all"),
@@ -134,7 +134,7 @@ impl std::fmt::Display for VersionInputs {
     }
 }
 
-impl std::str::FromStr for VersionInputs {
+impl ::std::str::FromStr for VersionInputs {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
