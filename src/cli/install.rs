@@ -49,7 +49,7 @@ impl NueCommand for CommandArguments {
                 })
             }
             VersionInputs::Lts(None) => {
-                release_branch = "lts";
+                release_branch = "LTS";
 
                 releases_json
                     .iter()
@@ -65,18 +65,20 @@ impl NueCommand for CommandArguments {
         match latest_release {
             Some(release) => {
                 println!(
-                    "Installing version {} from {} branch",
+                    "Installing version v{} from `{}` branch",
                     release.version,
                     if release_branch == "latest" {
                         "current"
-                    } else if release_branch == "lts" {
-                        "LTS"
+                    } else if release_branch == "LTS" {
+                        release_branch
                     } else {
                         release_branch
                     }
                 )
             }
-            None => {}
+            None => {
+                anyhow::bail!("No release found with given version or LTS code name.");
+            }
         }
 
         Ok(())
