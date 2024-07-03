@@ -1,3 +1,4 @@
+use anyhow::Context;
 use clap::Args;
 use reqwest::blocking as reqwest;
 
@@ -28,8 +29,12 @@ impl NueCommand for CommandArguments {
         progress_bar.enable_steady_tick(::std::time::Duration::from_millis(120));
 
         progress_bar.set_message("Fetching releases...");
-        let releases_json: Vec<types::node::Release> =
-            reqwest::get("https://nodejs.org/download/release/index.json")?.json()?;
+        let releases_json: Vec<types::node::Release> = reqwest::get(
+            "https://nodejs.org/download/release/index.json",
+        )
+        .context("Failed to fetch releases from `https://nodejs.org/download/release/index.json`")?
+        .json()
+        .context("Failed to parse releases JSON")?;
 
         progress_bar.set_message("Filtering releases based on input...");
         let release_branch: &str;
