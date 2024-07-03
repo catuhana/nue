@@ -32,9 +32,14 @@ impl NueCommand for CommandArguments {
     type Arguments = Self;
 
     fn run(&self) -> anyhow::Result<()> {
+        let progress_bar = indicatif::ProgressBar::new_spinner();
+        progress_bar.enable_steady_tick(::std::time::Duration::from_millis(120));
+
+        progress_bar.set_message("Fetching releases...");
         let releases_json: Vec<types::node::Release> =
             reqwest::get("https://nodejs.org/download/release/index.json")?.json()?;
 
+        progress_bar.set_message("Filtering releases based on input...");
         let mut releases = match &self.version {
             VersionInputs::VersionString(version) => releases_json
                 .into_iter()
@@ -53,10 +58,13 @@ impl NueCommand for CommandArguments {
             VersionInputs::All => releases_json,
         };
 
+        progress_bar.set_message("Filtering unsupported releases...");
         if !self.list_unsupported {
             let current_platform = types::platforms::Platform::get_system_platform().to_string();
             releases.retain(|release| release.files.contains(&current_platform));
         }
+
+        progress_bar.finish_and_clear();
 
         if self.latest {
             let latest_version = &releases

@@ -24,9 +24,14 @@ impl NueCommand for CommandArguments {
     type Arguments = Self;
 
     fn run(&self) -> anyhow::Result<()> {
+        let progress_bar = indicatif::ProgressBar::new_spinner();
+        progress_bar.enable_steady_tick(::std::time::Duration::from_millis(120));
+
+        progress_bar.set_message("Fetching releases...");
         let releases_json: Vec<types::node::Release> =
             reqwest::get("https://nodejs.org/download/release/index.json")?.json()?;
 
+        progress_bar.set_message("Filtering releases based on input...");
         let release_branch: &str;
         let latest_release = match &self.version {
             VersionInputs::VersionString(version) => {
@@ -59,6 +64,8 @@ impl NueCommand for CommandArguments {
                 releases_json.iter().max_by_key(|release| &release.version)
             }
         };
+
+        progress_bar.finish_and_clear();
 
         match latest_release {
             Some(release) => {
