@@ -1,4 +1,5 @@
 use clap::Args;
+use inquire::Select;
 use reqwest::blocking as reqwest;
 
 use super::NueCommand;
@@ -75,62 +76,43 @@ impl NueCommand for CommandArguments {
             println!("v{latest_version}");
         } else if releases.is_empty() {
             anyhow::bail!("No release found with given version or LTS code name.");
-        } else {
-            println!("{}", print_version_tree(&releases));
+        } else if let Some(selected_version) = Select::new(
+            "Select Node Version",
+            releases
+                .iter()
+                .map(|release| {
+                    if release.lts.is_code_name() {
+                        format!("v{} ({} LTS)", release.version, release.lts)
+                    } else if self.list_unsupported && !release.is_supported_by_current_platform() {
+                        return format!("v{} (unsupported)", release.version);
+                    } else {
+                        format!("v{}", release.version)
+                    }
+                })
+                .collect(),
+        )
+        .with_page_size(16)
+        .prompt_skippable()?
+        {
+            let selected_version = if selected_version.contains(' ') {
+                selected_version
+                    .split_whitespace()
+                    .nth(0)
+                    .expect("version not found, somehow.")
+            } else {
+                &selected_version
+            };
+
+            println!(
+                "Run `nue install {}` to install this version.",
+                selected_version.hyperlink(format!(
+                    "https://github.com/nodejs/node/releases/tag/{selected_version}"
+                ))
+            );
         }
 
         Ok(())
     }
-}
-
-fn print_version_tree(releases: &[types::node::Release]) -> String {
-    let mut tree_string = String::new();
-
-    let mut current_major = None;
-    let mut current_minor = None;
-    let mut current_patch_written = false;
-
-    for release in releases {
-        if current_major != Some(release.version.major) {
-            current_major = Some(release.version.major);
-            current_minor = None;
-            current_patch_written = false;
-
-            tree_string.push_str(&format!(
-                "v{}{}\n",
-                release.version.major,
-                match &release.lts {
-                    types::node::LTS::CodeName(code_name) => format!(" ({} LTS)", code_name),
-                    types::node::LTS::Bool(_false) => "".to_string(),
-                }
-            ));
-        }
-
-        if current_minor != Some(release.version.minor) || !current_patch_written {
-            current_minor = Some(release.version.minor);
-            current_patch_written = true;
-
-            tree_string.push_str(&format!(
-                "  - v{}.{}\n",
-                release.version.major, release.version.minor
-            ));
-        }
-
-        tree_string.push_str(&format!(
-            "    - {}{}\n",
-            format!("v{}", release.version).hyperlink(format!(
-                "https://github.com/nodejs/node/releases/tag/v{}",
-                release.version
-            )),
-            if release.is_supported_by_current_platform() {
-                ""
-            } else {
-                " (unsupported)"
-            }
-        ));
-    }
-
-    tree_string
 }
 
 impl ::std::fmt::Display for VersionInputs {

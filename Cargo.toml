@@ -14,6 +14,7 @@ lto = "fat"
 anyhow = "1.0.86"
 clap = { version = "4.5.8", features = ["derive"] }
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
+inquire = "0.7.5"
 node-semver = { git = "https://github.com/catuhana/node-semver-rs", features = [
   "serde",
 ] }

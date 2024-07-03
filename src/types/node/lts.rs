@@ -6,6 +6,22 @@ pub enum NodeLTS {
     Bool(bool),
 }
 
+impl NodeLTS {
+    pub const fn is_code_name(&self) -> bool {
+        matches!(self, Self::CodeName(_))
+    }
+}
+
+impl ::std::fmt::Display for NodeLTS {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match self {
+            Self::CodeName(code_name) => write!(f, "{}", code_name),
+            Self::Bool(false) => write!(f, "false"),
+            Self::Bool(true) => write!(f, "how?"),
+        }
+    }
+}
+
 impl<'de> Deserialize<'de> for NodeLTS {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
