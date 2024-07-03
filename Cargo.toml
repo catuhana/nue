@@ -5,6 +5,11 @@ version = "0.0.0"
 edition = "2021"
 rust-version = "1.79.0"
 
+[profile.release]
+opt-level = "z"
+strip = "debuginfo"
+lto = "fat"
+
 [dependencies]
 anyhow = "1.0.86"
 clap = { version = "4.5.8", features = ["derive"] }
