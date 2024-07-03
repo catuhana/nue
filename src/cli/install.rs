@@ -56,7 +56,7 @@ impl NueCommand for CommandArguments {
 
                 releases_json
                     .iter()
-                    .find(|release| matches!(release.lts, types::node::LTS::CodeName(_)))
+                    .find(|release| release.lts.is_code_name())
             }
             VersionInputs::Latest => {
                 release_branch = "latest";

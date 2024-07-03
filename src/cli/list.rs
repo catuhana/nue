@@ -54,7 +54,7 @@ impl NueCommand for CommandArguments {
                 .collect(),
             VersionInputs::Lts(None) => releases_json
                 .into_iter()
-                .filter(|release| matches!(release.lts, types::node::LTS::CodeName(_)))
+                .filter(|release| release.lts.is_code_name())
                 .collect(),
             VersionInputs::All => releases_json,
         };
