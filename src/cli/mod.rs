@@ -6,7 +6,7 @@ mod list;
 pub trait NueCommand {
     type Arguments: Args;
 
-    fn run(&self) -> anyhow::Result<()>;
+    async fn run(&self) -> anyhow::Result<()>;
 }
 
 #[derive(Parser, Debug)]

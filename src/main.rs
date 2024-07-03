@@ -5,10 +5,11 @@ mod cli;
 mod exts;
 mod types;
 
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     match cli::Cli::parse().subcommand {
-        cli::Subcommands::Install(install) => install.run(),
-        cli::Subcommands::List(list) => list.run(),
+        cli::Subcommands::Install(install) => install.run().await,
+        cli::Subcommands::List(list) => list.run().await,
     }?;
 
     Ok(())

@@ -1,6 +1,5 @@
 use anyhow::Context;
 use clap::Args;
-use reqwest::blocking as reqwest;
 
 use super::NueCommand;
 
@@ -24,7 +23,7 @@ pub struct CommandArguments {
 impl NueCommand for CommandArguments {
     type Arguments = Self;
 
-    fn run(&self) -> anyhow::Result<()> {
+    async fn run(&self) -> anyhow::Result<()> {
         let progress_bar = indicatif::ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
@@ -32,8 +31,10 @@ impl NueCommand for CommandArguments {
         let releases_json: Vec<types::node::Release> = reqwest::get(
             "https://nodejs.org/download/release/index.json",
         )
+        .await
         .context("Failed to fetch releases from `https://nodejs.org/download/release/index.json`")?
         .json()
+        .await
         .context("Failed to parse releases JSON")?;
 
         progress_bar.set_message("Filtering releases based on input...");
