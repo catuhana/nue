@@ -115,7 +115,7 @@ fn print_version_tree(releases: &[types::node::Release]) -> String {
                 "https://github.com/nodejs/node/releases/tag/v{}",
                 release.version
             )),
-            if types::platforms::Platform::is_supported(&release.files) {
+            if release.is_supported_by_current_platform() {
                 ""
             } else {
                 " (unsupported)"

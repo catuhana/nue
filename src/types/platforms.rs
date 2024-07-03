@@ -40,12 +40,6 @@ impl Platform {
             Self::Linux(Arch::X64)
         }
     }
-
-    pub fn is_supported(files: &[String]) -> bool {
-        let current_platform = Self::get_system_platform().to_string();
-
-        files.contains(&current_platform)
-    }
 }
 
 impl ::std::fmt::Display for Platform {
