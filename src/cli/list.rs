@@ -31,7 +31,7 @@ impl NueCommand for CommandArguments {
 
     fn run(&self) -> anyhow::Result<()> {
         let progress_bar = indicatif::ProgressBar::new_spinner();
-        progress_bar.enable_steady_tick(::std::time::Duration::from_millis(120));
+        progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
         progress_bar.set_message("Fetching releases...");
         let releases_json: Vec<types::node::Release> = reqwest::get(
@@ -102,8 +102,8 @@ impl NueCommand for CommandArguments {
     }
 }
 
-impl ::std::fmt::Display for VersionInputs {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+impl std::fmt::Display for VersionInputs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::VersionString(version) => write!(f, "{}", version),
             Self::All => write!(f, "all"),
@@ -113,7 +113,7 @@ impl ::std::fmt::Display for VersionInputs {
     }
 }
 
-impl ::std::str::FromStr for VersionInputs {
+impl std::str::FromStr for VersionInputs {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -125,7 +125,7 @@ impl ::std::str::FromStr for VersionInputs {
             _ if s.starts_with('v') && s[1..].parse::<node_semver::Range>().is_ok() => {
                 Ok(Self::VersionString(s[1..].to_string()))
             }
-            _ if (s.parse::<node_semver::Range>().is_ok()) => Ok(Self::VersionString(s)),
+            _ if s.parse::<node_semver::Range>().is_ok() => Ok(Self::VersionString(s)),
             _ => Ok(Self::Lts(Some(s))),
         }
     }
