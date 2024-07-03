@@ -5,7 +5,7 @@ use super::NueCommand;
 
 use crate::{exts::HyperlinkExt, types};
 
-#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone)]
 enum VersionInputs {
     VersionString(String),
     #[default]

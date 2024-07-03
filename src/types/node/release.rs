@@ -4,7 +4,7 @@ use crate::types;
 
 use super::LTS;
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct NodeRelease {
     #[serde(deserialize_with = "deserialise_version_v_prefix")]
     pub version: node_semver::Version,
