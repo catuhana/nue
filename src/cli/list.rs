@@ -1,4 +1,5 @@
 use clap::Args;
+use reqwest::blocking as reqwest;
 
 use super::NueCommand;
 
@@ -32,9 +33,7 @@ impl NueCommand for CommandArguments {
 
     fn run(&self) -> anyhow::Result<()> {
         let releases_json: Vec<types::node::Release> =
-            ureq::get("https://nodejs.org/download/release/index.json")
-                .call()?
-                .into_json()?;
+            reqwest::get("https://nodejs.org/download/release/index.json")?.json()?;
 
         let mut releases = match &self.version {
             VersionInputs::VersionString(version) => releases_json
