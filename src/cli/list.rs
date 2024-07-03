@@ -24,10 +24,6 @@ pub struct CommandArguments {
     /// Show the latest version.
     #[arg(long)]
     latest: bool,
-
-    /// List all versions no matter if the current system is supported or not.
-    #[arg(long)]
-    list_unsupported: bool,
 }
 
 impl NueCommand for CommandArguments {
@@ -45,31 +41,19 @@ impl NueCommand for CommandArguments {
         .json()
         .context("Failed to parse releases JSON")?;
 
-        progress_bar.set_message("Filtering releases based on input...");
-        let mut releases = match &self.version {
-            VersionInputs::VersionString(version) => releases_json
-                .into_iter()
-                .filter(|release| format!("{}", release.version).starts_with(version))
-                .collect(),
-            VersionInputs::Lts(Some(code_name)) => releases_json
-                .into_iter()
-                .filter(|release| {
-                    matches!(&release.lts, types::node::LTS::CodeName(name) if *name.to_lowercase() == *code_name)
-                })
-                .collect(),
-            VersionInputs::Lts(None) => releases_json
-                .into_iter()
-                .filter(|release| release.lts.is_code_name())
-                .collect(),
-            VersionInputs::All => releases_json,
-        };
+        progress_bar.set_message("Filtering releases...");
+        let releases: Vec<_> = releases_json.into_iter().filter(|release| {
+            if !release.is_supported_by_current_platform() {
+                return false
+            }
 
-        progress_bar.set_message("Filtering unsupported releases...");
-        if !self.list_unsupported {
-            let current_platform = types::platforms::Platform::get_system_platform().to_string();
-            releases.retain(|release| release.files.contains(&current_platform));
-        }
-
+            match &self.version {
+                VersionInputs::VersionString(version) => format!("{}", release.version).starts_with(version),
+                VersionInputs::Lts(Some(code_name)) => matches!(&release.lts, types::node::LTS::CodeName(name) if *name.to_lowercase() == *code_name),
+                VersionInputs::Lts(None) => release.lts.is_code_name(),
+                VersionInputs::All => true,
+            }
+        }).collect();
         progress_bar.finish_and_clear();
 
         if self.latest {
@@ -81,15 +65,13 @@ impl NueCommand for CommandArguments {
             println!("v{latest_version}");
         } else if releases.is_empty() {
             anyhow::bail!("No release found with given version or LTS code name.");
-        } else if let Some(selected_version) = Select::new(
+        } else if let Ok(Some(selected_version)) = Select::new(
             "Select Node Version",
             releases
                 .iter()
                 .map(|release| {
                     if release.lts.is_code_name() {
                         format!("v{} ({} LTS)", release.version, release.lts)
-                    } else if self.list_unsupported && !release.is_supported_by_current_platform() {
-                        return format!("v{} (unsupported)", release.version);
                     } else {
                         format!("v{}", release.version)
                     }
@@ -97,7 +79,7 @@ impl NueCommand for CommandArguments {
                 .collect(),
         )
         .with_page_size(16)
-        .prompt_skippable()?
+        .prompt_skippable()
         {
             let selected_version = if selected_version.contains(' ') {
                 selected_version
