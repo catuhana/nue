@@ -3,13 +3,18 @@ pub enum Platform {
     Linux(Arch),
 }
 
+// TODO: Create an enum similar to this for `NodeRelease`'s `files` field.
 #[derive(Debug)]
-#[allow(dead_code)] // Since `get_system_platforms` depends on the current target architecture, we need to suppress this warning.
 pub enum Arch {
+    #[cfg(target_arch = "aarch64")]
     ARM64,
+    #[cfg(target_arch = "arm")]
     ARMv7l,
+    #[cfg(target_arch = "powerpc64")]
     Ppc64le,
+    #[cfg(target_arch = "s390x")]
     S390x,
+    #[cfg(target_arch = "x86_64")]
     X64,
 }
 
@@ -50,46 +55,19 @@ impl std::fmt::Display for Platform {
     }
 }
 
-// impl FromStr for Platform {
-//     type Err = anyhow::Error;
-
-//     fn from_str(str: &str) -> Result<Self, Self::Err> {
-//         let parts: Vec<&str> = str.split('-').collect();
-
-//         match parts.as_slice() {
-//             ["linux", arch] => {
-//                 let arch = Arch::from_str(arch)?;
-
-//                 Ok(Self::Linux(arch))
-//             }
-//             _ => anyhow::bail!("Invalid platform specified."),
-//         }
-//     }
-// }
-
 impl std::fmt::Display for Arch {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            #[cfg(target_arch = "aarch64")]
             Self::ARM64 => write!(f, "arm64"),
+            #[cfg(target_arch = "arm")]
             Self::ARMv7l => write!(f, "armv7l"),
+            #[cfg(target_arch = "powerpc64")]
             Self::Ppc64le => write!(f, "ppc64le"),
+            #[cfg(target_arch = "s390x")]
             Self::S390x => write!(f, "s390x"),
+            #[cfg(target_arch = "x86_64")]
             Self::X64 => write!(f, "x64"),
         }
     }
 }
-
-// impl FromStr for Arch {
-//     type Err = anyhow::Error;
-
-//     fn from_str(str: &str) -> Result<Self, Self::Err> {
-//         match str {
-//             "arm64" => Ok(Self::ARM64),
-//             "armv7l" => Ok(Self::ARMv7l),
-//             "ppc64le" => Ok(Self::Ppc64le),
-//             "s390x" => Ok(Self::S390x),
-//             "x64" => Ok(Self::X64),
-//             _ => anyhow::bail!("Invalid architecture specified."),
-//         }
-//     }
-// }
