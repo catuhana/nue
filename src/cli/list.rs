@@ -33,14 +33,21 @@ impl NueCommand for CommandArguments {
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
         progress_bar.set_message("Fetching releases...");
-        let releases_json: Vec<types::node::Release> = reqwest::get(
-            "https://nodejs.org/download/release/index.json",
-        )
-        .await
-        .context("Failed to fetch releases from `https://nodejs.org/download/release/index.json`")?
-        .json()
-        .await
-        .context("Failed to parse releases JSON")?;
+        let response = reqwest::get("https://nodejs.org/download/release/index.json")
+            .await
+            .context(
+                "Failed to fetch releases from `https://nodejs.org/download/release/index.json`",
+            )?;
+
+        if !response.status().is_success() {
+            anyhow::bail!("Failed to fetch releases: {}", response.status());
+        }
+
+        progress_bar.set_message("Parsing releases...");
+        let releases_json: Vec<types::node::Release> = response
+            .json()
+            .await
+            .context("Failed to parse releases JSON")?;
 
         progress_bar.set_message("Filtering releases...");
         let releases: Vec<_> = releases_json.into_iter().filter(|release| {

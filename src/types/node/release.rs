@@ -1,6 +1,12 @@
+use async_compression::tokio::bufread::GzipDecoder;
+use futures::TryStreamExt;
+use indicatif::ProgressBar;
 use serde::{de::Error as DeError, Deserialize, Deserializer};
+use tokio::io::BufReader;
+use tokio_tar::Archive;
+use tokio_util::io::StreamReader;
 
-use crate::types;
+use crate::{exts::HyperlinkExt, types};
 
 use super::LTS;
 
@@ -13,6 +19,49 @@ pub struct NodeRelease {
 }
 
 impl NodeRelease {
+    pub async fn install(&self, path: std::path::PathBuf) -> anyhow::Result<()> {
+        if !self.is_supported_by_current_platform() {
+            anyhow::bail!("This release is not supported by the current platform.");
+        }
+
+        let response = reqwest::get(format!(
+            "https://nodejs.org/dist/v{}/node-v{}-{}.tar.gz",
+            self.version,
+            self.version,
+            types::platforms::Platform::get_system_platform()
+        ))
+        .await?;
+        if !response.status().is_success() {
+            anyhow::bail!("Failed to download release: {}", response.status());
+        }
+
+        let download_progress_bar = ProgressBar::new(0);
+        download_progress_bar.set_length(response.content_length().unwrap());
+        download_progress_bar.set_style(indicatif::ProgressStyle::default_bar().template(
+            "{msg}\n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})",
+        )?.progress_chars("#>-"));
+        download_progress_bar.set_message(format!(
+            "Downloading and unpacking version v{}",
+            self.version.to_string().hyperlink(format!(
+                "https://github.com/nodejs/node/releases/tag/{}",
+                self.version
+            )),
+        ));
+
+        let data_stream = response
+            .bytes_stream()
+            .map_ok(|chunk| {
+                download_progress_bar.inc(chunk.len() as u64);
+                chunk
+            })
+            .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err.to_string()));
+
+        let decompressed = GzipDecoder::new(BufReader::new(StreamReader::new(data_stream)));
+        Archive::new(decompressed).unpack(path).await?;
+
+        Ok(())
+    }
+
     pub fn is_supported_by_current_platform(&self) -> bool {
         self.files.iter().any(|file| {
             file.contains(&types::platforms::Platform::get_system_platform().to_string())

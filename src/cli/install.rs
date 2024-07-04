@@ -3,7 +3,7 @@ use clap::Args;
 
 use super::NueCommand;
 
-use crate::{exts::HyperlinkExt, types};
+use crate::types;
 
 #[derive(Debug, Default, Clone)]
 enum VersionInputs {
@@ -27,69 +27,44 @@ impl NueCommand for CommandArguments {
         let progress_bar = indicatif::ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
+        // TODO: Deduplicate this, exact same code is also in `list.rs`
         progress_bar.set_message("Fetching releases...");
-        let releases_json: Vec<types::node::Release> = reqwest::get(
-            "https://nodejs.org/download/release/index.json",
-        )
-        .await
-        .context("Failed to fetch releases from `https://nodejs.org/download/release/index.json`")?
-        .json()
-        .await
-        .context("Failed to parse releases JSON")?;
+        let response = reqwest::get("https://nodejs.org/download/release/index.json")
+            .await
+            .context(
+                "Failed to fetch releases from `https://nodejs.org/download/release/index.json`",
+            )?;
+        if !response.status().is_success() {
+            anyhow::bail!("Failed to fetch releases: {}", response.status());
+        }
+
+        progress_bar.set_message("Parsing releases...");
+        let releases_json: Vec<types::node::Release> = response
+            .json()
+            .await
+            .context("Failed to parse releases JSON")?;
 
         progress_bar.set_message("Filtering releases based on input...");
-        let release_branch: &str;
         let latest_release = match &self.version {
-            VersionInputs::VersionString(version) => {
-                release_branch = version;
-
-                releases_json
-                    .iter()
-                    .find(|release| format!("{}", release.version).starts_with(version))
-            }
-            VersionInputs::Lts(Some(code_name)) => {
-                release_branch = code_name;
-
-                releases_json.iter().find(|release| {
-                    matches!(
-                        &release.lts,
-                        types::node::LTS::CodeName(name) if *name.to_lowercase() == *code_name
-                    )
-                })
-            }
-            VersionInputs::Lts(None) => {
-                release_branch = "LTS";
-
-                releases_json
-                    .iter()
-                    .find(|release| release.lts.is_code_name())
-            }
-            VersionInputs::Latest => {
-                release_branch = "latest";
-
-                releases_json.iter().max_by_key(|release| &release.version)
-            }
+            VersionInputs::VersionString(version) => releases_json
+                .iter()
+                .find(|release| format!("{}", release.version).starts_with(version)),
+            VersionInputs::Lts(Some(code_name)) => releases_json.iter().find(|release| {
+                matches!(
+                    &release.lts,
+                    types::node::LTS::CodeName(name) if *name.to_lowercase() == *code_name
+                )
+            }),
+            VersionInputs::Lts(None) => releases_json
+                .iter()
+                .find(|release| release.lts.is_code_name()),
+            VersionInputs::Latest => releases_json.iter().max_by_key(|release| &release.version),
         };
 
         progress_bar.finish_and_clear();
 
         match latest_release {
-            Some(release) => {
-                let version_str = format!("v{}", release.version);
-                let branch_name = match release_branch {
-                    "latest" => "current",
-                    "LTS" => release_branch,
-                    _ => release_branch,
-                };
-
-                println!(
-                    "Installing version {} from `{}` branch",
-                    version_str.hyperlink(format!(
-                        "https://github.com/nodejs/node/releases/tag/{version_str}"
-                    )),
-                    branch_name
-                )
-            }
+            Some(release) => release.install("test".into()).await?,
             None => {
                 anyhow::bail!("No release found with given version or LTS code name.");
             }
