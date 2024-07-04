@@ -113,9 +113,9 @@ impl NueCommand for CommandArguments {
 impl std::fmt::Display for VersionInputs {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::VersionString(version) => write!(f, "{}", version),
+            Self::VersionString(version) => write!(f, "{version}"),
             Self::All => write!(f, "all"),
-            Self::Lts(Some(code_name)) => write!(f, "{}", code_name),
+            Self::Lts(Some(code_name)) => write!(f, "{code_name}"),
             Self::Lts(None) => write!(f, "lts"),
         }
     }

@@ -50,7 +50,7 @@ impl Platform {
 impl std::fmt::Display for Platform {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Linux(arch) => write!(f, "linux-{}", arch),
+            Self::Linux(arch) => write!(f, "linux-{arch}"),
         }
     }
 }

@@ -15,7 +15,7 @@ impl NodeLTS {
 impl std::fmt::Display for NodeLTS {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::CodeName(code_name) => write!(f, "{}", code_name),
+            Self::CodeName(code_name) => write!(f, "{code_name}"),
             Self::Bool(false) => write!(f, "false"),
             Self::Bool(true) => write!(f, "how?"),
         }
