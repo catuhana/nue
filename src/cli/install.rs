@@ -1,4 +1,3 @@
-use anyhow::Context;
 use clap::Args;
 
 use super::NueCommand;
@@ -27,38 +26,22 @@ impl NueCommand for CommandArguments {
         let progress_bar = indicatif::ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
-        // TODO: Deduplicate this, exact same code is also in `list.rs`
         progress_bar.set_message("Fetching releases...");
-        let response = reqwest::get("https://nodejs.org/download/release/index.json")
-            .await
-            .context(
-                "Failed to fetch releases from `https://nodejs.org/download/release/index.json`",
-            )?;
-        if !response.status().is_success() {
-            anyhow::bail!("Failed to fetch releases: {}", response.status());
-        }
+        let releases = types::node::URLs::default().fetch_releases().await?;
 
-        progress_bar.set_message("Parsing releases...");
-        let releases_json: Vec<types::node::Release> = response
-            .json()
-            .await
-            .context("Failed to parse releases JSON")?;
-
-        progress_bar.set_message("Filtering releases based on input...");
+        progress_bar.set_message("Filtering releases...");
         let latest_release = match &self.version {
-            VersionInputs::VersionString(version) => releases_json
+            VersionInputs::VersionString(version) => releases
                 .iter()
                 .find(|release| format!("{}", release.version).starts_with(version)),
-            VersionInputs::Lts(Some(code_name)) => releases_json.iter().find(|release| {
+            VersionInputs::Lts(Some(code_name)) => releases.iter().find(|release| {
                 matches!(
                     &release.lts,
                     types::node::LTS::CodeName(name) if *name.to_lowercase() == *code_name
                 )
             }),
-            VersionInputs::Lts(None) => releases_json
-                .iter()
-                .find(|release| release.lts.is_code_name()),
-            VersionInputs::Latest => releases_json.iter().max_by_key(|release| &release.version),
+            VersionInputs::Lts(None) => releases.iter().find(|release| release.lts.is_code_name()),
+            VersionInputs::Latest => releases.iter().max_by_key(|release| &release.version),
         };
 
         progress_bar.finish_and_clear();

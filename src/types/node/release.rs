@@ -24,13 +24,7 @@ impl NodeRelease {
             anyhow::bail!("This release is not supported by the current platform.");
         }
 
-        let response = reqwest::get(format!(
-            "https://nodejs.org/dist/v{}/node-v{}-{}.tar.gz",
-            self.version,
-            self.version,
-            types::platforms::Platform::get_system_platform()
-        ))
-        .await?;
+        let response = reqwest::get(self.get_download_url()).await?;
         if !response.status().is_success() {
             anyhow::bail!("Failed to download release: {}", response.status());
         }
@@ -42,10 +36,9 @@ impl NodeRelease {
         )?.progress_chars("#>-"));
         download_progress_bar.set_message(format!(
             "Downloading and unpacking version v{}",
-            self.version.to_string().hyperlink(format!(
-                "https://github.com/nodejs/node/releases/tag/{}",
-                self.version
-            )),
+            self.version
+                .to_string()
+                .hyperlink(self.get_github_release_url()),
         ));
 
         let data_stream = response
@@ -60,6 +53,24 @@ impl NodeRelease {
         Archive::new(decompressed).unpack(path).await?;
 
         Ok(())
+    }
+
+    pub fn get_download_url(&self) -> String {
+        format!(
+            "{}/v{}/node-v{}-{}.tar.gz",
+            types::node::URLs::default().get_distribution_path(),
+            self.version,
+            self.version,
+            types::platforms::Platform::get_system_platform()
+        )
+    }
+
+    pub fn get_github_release_url(&self) -> String {
+        format!(
+            "{}/releases/tag/v{}",
+            types::node::URLs::default().github,
+            self.version
+        )
     }
 
     pub fn is_supported_by_current_platform(&self) -> bool {

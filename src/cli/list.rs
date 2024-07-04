@@ -1,4 +1,3 @@
-use anyhow::Context;
 use clap::Args;
 use inquire::Select;
 
@@ -33,24 +32,10 @@ impl NueCommand for CommandArguments {
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
         progress_bar.set_message("Fetching releases...");
-        let response = reqwest::get("https://nodejs.org/download/release/index.json")
-            .await
-            .context(
-                "Failed to fetch releases from `https://nodejs.org/download/release/index.json`",
-            )?;
-
-        if !response.status().is_success() {
-            anyhow::bail!("Failed to fetch releases: {}", response.status());
-        }
-
-        progress_bar.set_message("Parsing releases...");
-        let releases_json: Vec<types::node::Release> = response
-            .json()
-            .await
-            .context("Failed to parse releases JSON")?;
+        let releases = types::node::URLs::default().fetch_releases().await?;
 
         progress_bar.set_message("Filtering releases...");
-        let releases: Vec<_> = releases_json.into_iter().filter(|release| {
+        let releases: Vec<_> = releases.into_iter().filter(|release| {
             if !release.is_supported_by_current_platform() {
                 return false
             }
@@ -89,20 +74,20 @@ impl NueCommand for CommandArguments {
         .with_page_size(16)
         .prompt_skippable()
         {
-            let selected_version = if selected_version.contains(' ') {
-                selected_version
-                    .split_whitespace()
-                    .nth(0)
-                    .expect("version not found, somehow.")
-            } else {
-                &selected_version
-            };
+            let release = releases
+                .iter()
+                .find(|release| {
+                    format!("v{}", release.version)
+                        == selected_version.split_whitespace().nth(0).unwrap()
+                })
+                .expect("release not found, somehow.");
 
             println!(
                 "Run `nue install {}` to install this version.",
-                selected_version.hyperlink(format!(
-                    "https://github.com/nodejs/node/releases/tag/{selected_version}"
-                ))
+                release
+                    .version
+                    .to_string()
+                    .hyperlink(release.get_github_release_url())
             );
         }
 
