@@ -19,7 +19,7 @@ pub struct NodeRelease {
 }
 
 impl NodeRelease {
-    pub async fn install(&self, path: std::path::PathBuf) -> anyhow::Result<()> {
+    pub async fn install(&self, path: impl AsRef<std::path::Path> + Send) -> anyhow::Result<()> {
         if !self.is_supported_by_current_platform() {
             anyhow::bail!("This release is not supported by the current platform.");
         }
@@ -57,11 +57,10 @@ impl NodeRelease {
 
     pub fn get_download_url(&self) -> String {
         format!(
-            "{}/v{}/node-v{}-{}.tar.gz",
+            "{}/v{}/{}.tar.gz",
             types::node::URLs::default().get_distribution_path(),
             self.version,
-            self.version,
-            types::platforms::Platform::get_system_platform()
+            self.get_archive_string()
         )
     }
 
@@ -70,6 +69,14 @@ impl NodeRelease {
             "{}/releases/tag/v{}",
             types::node::URLs::default().github,
             self.version
+        )
+    }
+
+    pub fn get_archive_string(&self) -> String {
+        format!(
+            "node-v{}-{}",
+            self.version,
+            types::platforms::Platform::get_system_platform()
         )
     }
 

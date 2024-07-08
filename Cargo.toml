@@ -14,6 +14,7 @@ lto = "fat"
 anyhow = "1.0.86"
 async-compression = { version = "0.4.11", features = ["gzip", "tokio"] }
 clap = { version = "4.5.8", features = ["derive"] }
+fastrand = "2.1.0"
 futures = "0.3.30"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
 inquire = "0.7.5"

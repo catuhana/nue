@@ -47,7 +47,13 @@ impl NueCommand for CommandArguments {
         progress_bar.finish_and_clear();
 
         match latest_release {
-            Some(release) => release.install("test".into()).await?,
+            Some(release) => {
+                release
+                    .install(types::temp::Folder::create()?.path())
+                    .await?;
+
+                println!("Node.js v{} installed successfully!", release.version);
+            }
             None => {
                 anyhow::bail!("No release found with given version or LTS code name.");
             }

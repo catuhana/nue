@@ -4,6 +4,7 @@ use cli::NueCommand;
 mod cli;
 mod exts;
 mod types;
+mod utils;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

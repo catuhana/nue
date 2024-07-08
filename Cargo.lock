@@ -882,6 +882,7 @@ dependencies = [
  "anyhow",
  "async-compression",
  "clap",
+ "fastrand",
  "futures",
  "indicatif",
  "inquire",
