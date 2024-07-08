@@ -1,6 +1,6 @@
 use async_compression::tokio::bufread::GzipDecoder;
 use futures::TryStreamExt;
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressStyle};
 use serde::{de::Error as DeError, Deserialize, Deserializer};
 use tokio::io::BufReader;
 use tokio_tar::Archive;
@@ -29,17 +29,18 @@ impl NodeRelease {
             anyhow::bail!("Failed to download release: {}", response.status());
         }
 
-        let download_progress_bar = ProgressBar::new(0);
-        download_progress_bar.set_length(response.content_length().unwrap());
-        download_progress_bar.set_style(indicatif::ProgressStyle::default_bar().template(
-            "{msg}\n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})",
-        )?.progress_chars("#>-"));
-        download_progress_bar.set_message(format!(
-            "Downloading and unpacking version v{}",
-            self.version
-                .to_string()
-                .hyperlink(self.get_github_release_url()),
-        ));
+        let download_progress_bar = ProgressBar::new(response.content_length().unwrap_or_default())
+            .with_style(
+                ProgressStyle::default_bar()
+                    .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})")?
+                    .progress_chars("#>-")
+            )
+            .with_message(
+                format!(
+                    "Downloading and unpacking version v{}",
+                    self.version.to_string().hyperlink(self.get_github_release_url())
+                )
+            );
 
         let data_stream = response
             .bytes_stream()
@@ -47,7 +48,7 @@ impl NodeRelease {
                 download_progress_bar.inc(chunk.len() as u64);
                 chunk
             })
-            .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err.to_string()));
+            .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err));
 
         let decompressed = GzipDecoder::new(BufReader::new(StreamReader::new(data_stream)));
         Archive::new(decompressed).unpack(path).await?;

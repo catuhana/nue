@@ -3,7 +3,7 @@ use serde::{de::Visitor, Deserialize, Deserializer};
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum NodeLTS {
     CodeName(String),
-    Bool(bool),
+    Bool,
 }
 
 impl NodeLTS {
@@ -16,8 +16,7 @@ impl std::fmt::Display for NodeLTS {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::CodeName(code_name) => write!(f, "{code_name}"),
-            Self::Bool(false) => write!(f, "false"),
-            Self::Bool(true) => write!(f, "how?"),
+            Self::Bool => write!(f, "false"),
         }
     }
 }
@@ -39,8 +38,8 @@ impl<'de> Visitor<'de> for NodeLTSVisitor {
         formatter.write_str("a string or a boolean")
     }
 
-    fn visit_bool<E>(self, value: bool) -> Result<NodeLTS, E> {
-        Ok(NodeLTS::Bool(value))
+    fn visit_bool<E>(self, _value: bool) -> Result<NodeLTS, E> {
+        Ok(NodeLTS::Bool)
     }
 
     fn visit_str<E>(self, value: &str) -> Result<NodeLTS, E> {

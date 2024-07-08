@@ -37,13 +37,12 @@ impl NueCommand for CommandArguments {
             VersionInputs::Lts(Some(code_name)) => releases.iter().find(|release| {
                 matches!(
                     &release.lts,
-                    types::node::LTS::CodeName(name) if *name.to_lowercase() == *code_name
+                    types::node::LTS::CodeName(name) if &name.to_lowercase() == code_name
                 )
             }),
             VersionInputs::Lts(None) => releases.iter().find(|release| release.lts.is_code_name()),
             VersionInputs::Latest => releases.iter().max_by_key(|release| &release.version),
         };
-
         progress_bar.finish_and_clear();
 
         match latest_release {

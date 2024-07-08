@@ -7,6 +7,7 @@ impl Folder {
         let system_temp_folder = std::env::temp_dir();
         let temp_folder_path =
             system_temp_folder.join(format!("nue-{}", utils::random::generate_string(8)));
+
         std::fs::create_dir_all(&temp_folder_path)?;
 
         Ok(Self(temp_folder_path))
