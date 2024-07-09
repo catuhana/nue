@@ -72,8 +72,8 @@ impl NueCommand for CommandArguments {
                 })
                 .collect(),
         )
-            .with_page_size(16)
-            .prompt_skippable()
+        .with_page_size(16)
+        .prompt_skippable()
         {
             let release = releases
                 .iter()
