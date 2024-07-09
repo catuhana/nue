@@ -1,4 +1,5 @@
 use clap::Parser;
+
 use cli::NueCommand;
 
 mod cli;

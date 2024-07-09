@@ -1,8 +1,9 @@
 use clap::Args;
-
-use super::NueCommand;
+use indicatif::ProgressBar;
 
 use crate::types;
+
+use super::NueCommand;
 
 #[derive(Debug, Default, Clone)]
 enum VersionInputs {
@@ -23,7 +24,7 @@ impl NueCommand for CommandArguments {
     type Arguments = Self;
 
     async fn run(&self) -> anyhow::Result<()> {
-        let progress_bar = indicatif::ProgressBar::new_spinner();
+        let progress_bar = ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
         progress_bar.set_message("Fetching releases...");

@@ -1,9 +1,10 @@
 use clap::Args;
+use indicatif::ProgressBar;
 use inquire::Select;
 
-use super::NueCommand;
-
 use crate::{exts::HyperlinkExt, types};
+
+use super::NueCommand;
 
 #[derive(Debug, Default, Clone)]
 enum VersionInputs {
@@ -28,7 +29,7 @@ impl NueCommand for CommandArguments {
     type Arguments = Self;
 
     async fn run(&self) -> anyhow::Result<()> {
-        let progress_bar = indicatif::ProgressBar::new_spinner();
+        let progress_bar = ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
         progress_bar.set_message("Fetching releases...");
@@ -37,7 +38,7 @@ impl NueCommand for CommandArguments {
         progress_bar.set_message("Filtering releases...");
         let releases: Vec<_> = releases.into_iter().filter(|release| {
             if !release.is_supported_by_current_platform() {
-                return false
+                return false;
             }
 
             match &self.version {
@@ -71,8 +72,8 @@ impl NueCommand for CommandArguments {
                 })
                 .collect(),
         )
-        .with_page_size(16)
-        .prompt_skippable()
+            .with_page_size(16)
+            .prompt_skippable()
         {
             let release = releases
                 .iter()
