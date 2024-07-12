@@ -48,9 +48,7 @@ impl NueCommand for CommandArguments {
 
         match latest_release {
             Some(release) => {
-                release
-                    .install(types::temp::Folder::create()?.path())
-                    .await?;
+                release.install().await?;
 
                 println!("Node.js v{} installed successfully!", release.version);
             }

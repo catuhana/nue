@@ -1,3 +1,4 @@
+use crate::{exts::HyperlinkExt, types};
 use async_compression::tokio::bufread::GzipDecoder;
 use futures::TryStreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -5,8 +6,6 @@ use serde::{de::Error as DeError, Deserialize, Deserializer};
 use tokio::io::BufReader;
 use tokio_tar::Archive;
 use tokio_util::io::StreamReader;
-
-use crate::{exts::HyperlinkExt, types};
 
 use super::LTS;
 
@@ -19,7 +18,7 @@ pub struct NodeRelease {
 }
 
 impl NodeRelease {
-    pub async fn install(&self, path: impl AsRef<std::path::Path> + Send) -> anyhow::Result<()> {
+    pub async fn install(&self) -> anyhow::Result<()> {
         if !self.is_supported_by_current_platform() {
             anyhow::bail!("This release is not supported by the current platform.");
         }
@@ -32,13 +31,13 @@ impl NodeRelease {
         let download_progress_bar = ProgressBar::new(response.content_length().unwrap_or_default())
             .with_style(
                 ProgressStyle::default_bar()
-                    .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})")?
-                    .progress_chars("#>-")
+                    .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} {bytes_per_sec} ({eta})")?
+                    .progress_chars("-Cc·")
             )
             .with_message(
                 format!(
-                    "Downloading and unpacking version v{}",
-                    self.version.to_string().hyperlink(self.get_github_release_url())
+                    "Downloading and unpacking version {}",
+                    format!("v{}", self.version).hyperlink(self.get_github_release_url())
                 )
             );
 
@@ -50,8 +49,23 @@ impl NodeRelease {
             })
             .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err));
 
+        let unpack_temporary_folder = types::temp::Folder::new()?;
+        // TODO: Use `XzDecoder` since its the default NodeJS website downloads for Linux.
+        // It's also smaller than Gzip.
         let decompressed = GzipDecoder::new(BufReader::new(StreamReader::new(data_stream)));
-        Archive::new(decompressed).unpack(path).await?;
+        Archive::new(decompressed)
+            .unpack(unpack_temporary_folder.path())
+            .await?;
+
+        let nue_dir = dirs::home_dir()
+            .expect("Failed to get home directory")
+            .join(".nue");
+        dircpy::copy_dir(
+            unpack_temporary_folder
+                .path()
+                .join(self.get_archive_string()),
+            nue_dir,
+        )?;
 
         Ok(())
     }
@@ -82,6 +96,7 @@ impl NodeRelease {
     }
 
     pub fn is_supported_by_current_platform(&self) -> bool {
+        // TODO: ???
         self.files.iter().any(|file| {
             file.contains(&types::platforms::Platform::get_system_platform().to_string())
         })

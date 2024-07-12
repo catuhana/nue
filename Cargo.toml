@@ -14,6 +14,8 @@ lto = "fat"
 anyhow = "1.0.86"
 async-compression = { version = "0.4.11", features = ["gzip", "tokio"] }
 clap = { version = "4.5.8", features = ["derive"] }
+dircpy = "0.3.16"
+dirs = "5.0.1"
 fastrand = "2.1.0"
 futures = "0.3.30"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
@@ -26,3 +28,4 @@ serde = { version = "1.0.203", features = ["derive"] }
 tokio = { version = "1.38.0", features = ["rt-multi-thread", "sync", "macros"] }
 tokio-tar = "0.3.1"
 tokio-util = { version = "0.7.11", features = ["io"] }
+walkdir = "2.5.0"
