@@ -12,7 +12,7 @@ lto = "fat"
 
 [dependencies]
 anyhow = "1.0.86"
-async-compression = { version = "0.4.11", features = ["gzip", "tokio"] }
+async-compression = { version = "0.4.11", features = ["xz", "tokio"] }
 clap = { version = "4.5.8", features = ["derive"] }
 dircpy = "0.3.16"
 dirs = "5.0.1"

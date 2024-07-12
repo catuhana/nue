@@ -1,5 +1,5 @@
 use crate::{exts::HyperlinkExt, types};
-use async_compression::tokio::bufread::GzipDecoder;
+use async_compression::tokio::bufread::XzDecoder;
 use futures::TryStreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{de::Error as DeError, Deserialize, Deserializer};
@@ -50,9 +50,7 @@ impl NodeRelease {
             .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err));
 
         let unpack_temporary_folder = types::temp::Folder::new()?;
-        // TODO: Use `XzDecoder` since its the default NodeJS website downloads for Linux.
-        // It's also smaller than Gzip.
-        let decompressed = GzipDecoder::new(BufReader::new(StreamReader::new(data_stream)));
+        let decompressed = XzDecoder::new(BufReader::new(StreamReader::new(data_stream)));
         Archive::new(decompressed)
             .unpack(unpack_temporary_folder.path())
             .await?;
@@ -72,7 +70,7 @@ impl NodeRelease {
 
     pub fn get_download_url(&self) -> String {
         format!(
-            "{}/v{}/{}.tar.gz",
+            "{}/v{}/{}.tar.xz",
             types::node::URLs::default().get_distribution_path(),
             self.version,
             self.get_archive_string()
@@ -96,10 +94,8 @@ impl NodeRelease {
     }
 
     pub fn is_supported_by_current_platform(&self) -> bool {
-        // TODO: ???
-        self.files.iter().any(|file| {
-            file.contains(&types::platforms::Platform::get_system_platform().to_string())
-        })
+        self.files
+            .contains(&types::platforms::Platform::get_system_platform().to_string())
     }
 }
 
