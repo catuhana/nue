@@ -324,9 +324,9 @@ dependencies = [
 
 [[package]]
 name = "dircpy"
-version = "0.3.16"
+version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29259db751c34980bfc44100875890c507f585323453b91936960ab1104272ca"
+checksum = "d3e4d938b008c44740a0188e495f22d7d605f6df24e47dd1a885f1b3f9a8e5e5"
 dependencies = [
  "jwalk",
  "log",
