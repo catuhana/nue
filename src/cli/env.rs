@@ -3,7 +3,6 @@ use clap::Args;
 use super::NueCommand;
 
 #[derive(Args, Debug)]
-
 pub struct CommandArguments;
 
 impl NueCommand for CommandArguments {
