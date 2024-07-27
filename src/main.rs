@@ -12,6 +12,7 @@ async fn main() -> anyhow::Result<()> {
     match cli::Cli::parse().subcommand {
         cli::Subcommands::Install(install) => install.run().await,
         cli::Subcommands::List(list) => list.run().await,
+        cli::Subcommands::Env(env) => env.run().await,
     }?;
 
     Ok(())

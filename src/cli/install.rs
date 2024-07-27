@@ -1,7 +1,7 @@
 use clap::Args;
 use indicatif::ProgressBar;
 
-use crate::types;
+use crate::{types, utils};
 
 use super::NueCommand;
 
@@ -49,6 +49,10 @@ impl NueCommand for CommandArguments {
         match latest_release {
             Some(release) => {
                 release.install().await?;
+
+                if !utils::check::path_contains(".nue/bin")? {
+                    println!("Node is installed but its binary path is not added to `PATH`. Run `nue env` to generate environment script.");
+                }
 
                 println!("Node.js v{} installed successfully!", release.version);
             }

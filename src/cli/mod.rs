@@ -1,5 +1,6 @@
 use clap::{Args, Parser, Subcommand};
 
+mod env;
 mod install;
 mod list;
 
@@ -22,4 +23,6 @@ pub enum Subcommands {
     Install(install::CommandArguments),
     /// List all available Node versions.
     List(list::CommandArguments),
+    /// Generate environment script.
+    Env(env::CommandArguments),
 }
