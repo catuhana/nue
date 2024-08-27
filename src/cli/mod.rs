@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 mod env;
 mod install;
 mod list;
+mod uninstall;
 
 pub trait NueCommand {
     async fn run(&self) -> anyhow::Result<()>;
@@ -19,6 +20,8 @@ pub struct Cli {
 pub enum Subcommands {
     /// Install Node.
     Install(install::CommandArguments),
+    /// Uninstall Node.
+    Uninstall(uninstall::CommandArguments),
     /// List all available Node versions.
     List(list::CommandArguments),
     /// Generate environment script.
