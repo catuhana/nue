@@ -18,7 +18,8 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Subcommands {
-    /// Install Node.
+    /// Install or update Node.
+    #[command(alias = "update")]
     Install(install::CommandArguments),
     /// Uninstall Node.
     Uninstall(uninstall::CommandArguments),
