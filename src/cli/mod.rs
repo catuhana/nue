@@ -1,12 +1,10 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 
 mod env;
 mod install;
 mod list;
 
 pub trait NueCommand {
-    type Arguments: Args;
-
     async fn run(&self) -> anyhow::Result<()>;
 }
 

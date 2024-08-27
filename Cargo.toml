@@ -12,20 +12,20 @@ lto = "fat"
 
 [dependencies]
 anyhow = "1.0.86"
-async-compression = { version = "0.4.11", features = ["xz", "tokio"] }
-clap = { version = "4.5.8", features = ["derive"] }
-dircpy = "0.3.16"
+async-compression = { version = "0.4.12", features = ["xz", "tokio"] }
+clap = { version = "4.5.16", features = ["derive"] }
+dircpy = "0.3.19"
 dirs = "5.0.1"
-fastrand = "2.1.0"
+fastrand = "2.1.1"
 futures = "0.3.30"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
 inquire = "0.7.5"
 node-semver = { git = "https://github.com/catuhana/node-semver-rs", features = [
   "serde",
 ] }
-reqwest = { version = "0.12.5", features = ["blocking", "json", "stream"] }
-serde = { version = "1.0.203", features = ["derive"] }
-tokio = { version = "1.38.0", features = ["rt-multi-thread", "sync", "macros"] }
+reqwest = { version = "0.12.7", features = ["blocking", "json", "stream"] }
+serde = { version = "1.0.209", features = ["derive"] }
+tokio = { version = "1.39.3", features = ["rt-multi-thread", "sync", "macros"] }
 tokio-tar = "0.3.1"
 tokio-util = { version = "0.7.11", features = ["io"] }
 walkdir = "2.5.0"

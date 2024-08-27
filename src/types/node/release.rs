@@ -1,4 +1,3 @@
-use crate::{exts::HyperlinkExt, types};
 use async_compression::tokio::bufread::XzDecoder;
 use futures::TryStreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -6,6 +5,8 @@ use serde::{de::Error as DeError, Deserialize, Deserializer};
 use tokio::io::BufReader;
 use tokio_tar::Archive;
 use tokio_util::io::StreamReader;
+
+use crate::{exts::HyperlinkExt, types};
 
 use super::LTS;
 
@@ -56,14 +57,16 @@ impl NodeRelease {
             .await?;
 
         let nue_dir = dirs::home_dir()
-            .expect("Failed to get home directory")
+            .expect("failed to get home directory")
             .join(".nue");
-        dircpy::copy_dir(
+        dircpy::CopyBuilder::new(
             unpack_temporary_folder
                 .path()
                 .join(self.get_archive_string()),
             nue_dir,
-        )?;
+        )
+        .overwrite_if_newer(true)
+        .run_par()?;
 
         Ok(())
     }

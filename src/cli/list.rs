@@ -26,8 +26,6 @@ pub struct CommandArguments {
 }
 
 impl NueCommand for CommandArguments {
-    type Arguments = Self;
-
     async fn run(&self) -> anyhow::Result<()> {
         let progress_bar = ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));

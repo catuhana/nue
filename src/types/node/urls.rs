@@ -19,7 +19,7 @@ impl NodeURLs {
         let releases_json = response
             .json()
             .await
-            .context("Failed to parse releases JSON")?;
+            .context("failed to parse releases JSON")?;
 
         Ok(releases_json)
     }
