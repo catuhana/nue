@@ -1,7 +1,7 @@
 use clap::Args;
 use indicatif::ProgressBar;
 
-use crate::{types, utils};
+use crate::types;
 
 use super::NueCommand;
 
@@ -18,6 +18,9 @@ pub struct CommandArguments {
     /// Optional version of Node to install.
     #[arg(default_value_t = VersionInputs::default())]
     version: VersionInputs,
+
+    #[arg(long)]
+    force: bool,
 }
 
 impl NueCommand for CommandArguments {
@@ -46,13 +49,17 @@ impl NueCommand for CommandArguments {
 
         match latest_release {
             Some(release) => {
-                release.install().await?;
-
-                if !utils::check::path_contains(".nue/bin")? {
-                    println!("Node is installed but its binary path is not added to `PATH`. Run `nue env` to generate environment script.");
+                if release.check_installed()? && !self.force {
+                    println!(
+                        "Node v{} is already installed. Use `--force` to re-install.",
+                        release.version
+                    );
+                    return Ok(());
                 }
 
-                println!("Node.js v{} installed successfully!", release.version);
+                release.install().await?;
+
+                println!("Node v{} is now installed!", release.version);
             }
             None => {
                 anyhow::bail!("No release found with given version or LTS code name.");

@@ -6,7 +6,7 @@ use tokio::io::BufReader;
 use tokio_tar::Archive;
 use tokio_util::io::StreamReader;
 
-use crate::{exts::HyperlinkExt, types};
+use crate::{exts::HyperlinkExt, types, utils};
 
 use super::LTS;
 
@@ -59,16 +59,43 @@ impl NodeRelease {
         let nue_dir = dirs::home_dir()
             .expect("failed to get home directory")
             .join(".nue");
-        dircpy::CopyBuilder::new(
+        if nue_dir.try_exists()? {
+            tokio::fs::remove_dir_all(&nue_dir).await?;
+        }
+
+        dircpy::copy_dir(
             unpack_temporary_folder
                 .path()
                 .join(self.get_archive_string()),
             nue_dir,
-        )
-        .overwrite_if_newer(true)
-        .run_par()?;
+        )?;
+
+        if !utils::check::path_contains(".nue/bin")? {
+            println!("Node is installed but its binary path is not added to `PATH`. Run `nue env` to generate environment script.");
+        }
 
         Ok(())
+    }
+
+    pub fn check_installed(&self) -> anyhow::Result<bool> {
+        let nue_dir = dirs::home_dir()
+            .expect("failed to get home directory")
+            .join(".nue");
+
+        if !nue_dir.try_exists()? {
+            return Ok(false);
+        }
+
+        let version = std::process::Command::new(nue_dir.join("bin").join("node"))
+            .arg("--version")
+            .output()?
+            .stdout;
+
+        if !String::from_utf8_lossy(&version).contains(&self.version.to_string()) {
+            return Ok(false);
+        }
+
+        Ok(true)
     }
 
     pub fn get_download_url(&self) -> String {
