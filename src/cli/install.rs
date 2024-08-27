@@ -1,7 +1,7 @@
 use clap::Args;
 use indicatif::ProgressBar;
 
-use crate::types;
+use crate::{types, utils};
 
 use super::NueCommand;
 
@@ -58,8 +58,11 @@ impl NueCommand for CommandArguments {
                 }
 
                 release.install().await?;
-
                 println!("Node v{} is now installed!", release.version);
+
+                if !utils::check::path_contains(".nue/bin")? {
+                    println!("Node is installed but its binary path is not added to `PATH`. Run `nue env` to generate environment script.");
+                }
             }
             None => {
                 anyhow::bail!("No release found with given version or LTS code name.");

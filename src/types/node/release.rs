@@ -6,7 +6,7 @@ use tokio::io::BufReader;
 use tokio_tar::Archive;
 use tokio_util::io::StreamReader;
 
-use crate::{exts::HyperlinkExt, types, utils};
+use crate::{exts::HyperlinkExt, types};
 
 use super::LTS;
 
@@ -69,10 +69,6 @@ impl NodeRelease {
                 .join(self.get_archive_string()),
             nue_dir,
         )?;
-
-        if !utils::check::path_contains(".nue/bin")? {
-            println!("Node is installed but its binary path is not added to `PATH`. Run `nue env` to generate environment script.");
-        }
 
         Ok(())
     }
