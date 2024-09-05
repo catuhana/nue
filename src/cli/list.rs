@@ -2,9 +2,9 @@ use clap::Args;
 use indicatif::ProgressBar;
 use inquire::Select;
 
-use crate::{exts::HyperlinkExt, types};
+use crate::types;
 
-use super::NueCommand;
+use super::{install, NueCommand};
 
 #[derive(Debug, Default, Clone)]
 enum VersionInputs {
@@ -23,6 +23,10 @@ pub struct CommandArguments {
     /// Show the latest version.
     #[arg(long)]
     latest: bool,
+
+    /// Force re-installation of the selected version.
+    #[arg(long)]
+    force: bool,
 }
 
 impl NueCommand for CommandArguments {
@@ -81,13 +85,12 @@ impl NueCommand for CommandArguments {
                 })
                 .expect("release not found, somehow.");
 
-            println!(
-                "Run `nue install {}` to install this version.",
-                release
-                    .version
-                    .to_string()
-                    .hyperlink(release.get_github_release_url())
-            );
+            install::CommandArguments {
+                version: install::VersionInputs::VersionString(release.version.to_string()),
+                force: self.force,
+            }
+            .run()
+            .await?;
         }
 
         Ok(())

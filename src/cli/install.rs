@@ -6,7 +6,7 @@ use crate::{types, utils};
 use super::NueCommand;
 
 #[derive(Debug, Default, Clone)]
-enum VersionInputs {
+pub enum VersionInputs {
     VersionString(String),
     #[default]
     Latest,
@@ -17,10 +17,11 @@ enum VersionInputs {
 pub struct CommandArguments {
     /// Optional version of Node to install.
     #[arg(default_value_t = VersionInputs::default())]
-    version: VersionInputs,
+    pub version: VersionInputs,
 
+    /// Force re-installation of the selected version.
     #[arg(long)]
-    force: bool,
+    pub force: bool,
 }
 
 impl NueCommand for CommandArguments {
