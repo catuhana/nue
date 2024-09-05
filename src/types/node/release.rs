@@ -1,3 +1,5 @@
+use std::process;
+
 use async_compression::tokio::bufread::XzDecoder;
 use futures::TryStreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -61,7 +63,7 @@ impl NodeRelease {
             .unpack(unpack_temporary_folder.path())
             .await?;
 
-        if NUE_PATH.try_exists()? {
+        if self.check_installed()? {
             tokio::fs::remove_dir_all(&*NUE_PATH).await?;
         }
 
@@ -69,18 +71,18 @@ impl NodeRelease {
             unpack_temporary_folder
                 .path()
                 .join(self.get_archive_string()),
-            &*NUE_PATH,
+            &*NUE_PATH.join("node"),
         )?;
 
         Ok(())
     }
 
     pub fn check_installed(&self) -> anyhow::Result<bool> {
-        if !NUE_PATH.try_exists()? {
+        if !NUE_PATH.join("node").try_exists()? {
             return Ok(false);
         }
 
-        let version = std::process::Command::new(NUE_PATH.join("bin").join("node"))
+        let version = process::Command::new(NUE_PATH.join("bin").join("node"))
             .arg("--version")
             .output()?
             .stdout;
