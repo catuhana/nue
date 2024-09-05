@@ -1,6 +1,6 @@
 use clap::Args;
 
-use crate::utils;
+use crate::{globals::NUE_PATH, utils};
 
 use super::NueCommand;
 
@@ -9,14 +9,11 @@ pub struct CommandArguments;
 
 impl NueCommand for CommandArguments {
     async fn run(&self) -> anyhow::Result<()> {
-        let nue_dir = dirs::home_dir()
-            .expect("failed to get home directory")
-            .join(".nue");
-        if !nue_dir.try_exists()? {
+        if !NUE_PATH.try_exists()? {
             println!("Node is not installed.");
             return Ok(());
         }
-        tokio::fs::remove_dir_all(nue_dir).await?;
+        tokio::fs::remove_dir_all(&*NUE_PATH).await?;
         println!("Node uninstalled successfully.");
 
         if utils::check::path_contains(".nue/bin")? {

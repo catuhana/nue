@@ -4,6 +4,7 @@ use cli::NueCommand;
 
 mod cli;
 mod exts;
+mod globals;
 mod types;
 mod utils;
 

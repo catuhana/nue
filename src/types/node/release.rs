@@ -6,7 +6,7 @@ use tokio::io::BufReader;
 use tokio_tar::Archive;
 use tokio_util::io::StreamReader;
 
-use crate::{exts::HyperlinkExt, types};
+use crate::{exts::HyperlinkExt, globals::NUE_PATH, types};
 
 use super::LTS;
 
@@ -56,33 +56,26 @@ impl NodeRelease {
             .unpack(unpack_temporary_folder.path())
             .await?;
 
-        let nue_dir = dirs::home_dir()
-            .expect("failed to get home directory")
-            .join(".nue");
-        if nue_dir.try_exists()? {
-            tokio::fs::remove_dir_all(&nue_dir).await?;
+        if NUE_PATH.try_exists()? {
+            tokio::fs::remove_dir_all(&*NUE_PATH).await?;
         }
 
         dircpy::copy_dir(
             unpack_temporary_folder
                 .path()
                 .join(self.get_archive_string()),
-            nue_dir,
+            &*NUE_PATH,
         )?;
 
         Ok(())
     }
 
     pub fn check_installed(&self) -> anyhow::Result<bool> {
-        let nue_dir = dirs::home_dir()
-            .expect("failed to get home directory")
-            .join(".nue");
-
-        if !nue_dir.try_exists()? {
+        if !NUE_PATH.try_exists()? {
             return Ok(false);
         }
 
-        let version = std::process::Command::new(nue_dir.join("bin").join("node"))
+        let version = std::process::Command::new(NUE_PATH.join("bin").join("node"))
             .arg("--version")
             .output()?
             .stdout;
