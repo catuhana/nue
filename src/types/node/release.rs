@@ -7,7 +7,7 @@ use tokio_tar::Archive;
 use tokio_util::io::StreamReader;
 
 use crate::{
-    constants::{NODE_DISTRIBUTIONS_URL, NODE_GITHUB_URL},
+    constants::{NODE_DISTRIBUTIONS_INDEX_URL, NODE_DISTRIBUTIONS_URL, NODE_GITHUB_URL},
     exts::HyperlinkExt,
     globals::NUE_PATH,
     types,
@@ -93,7 +93,7 @@ impl NodeRelease {
     }
 
     pub async fn get_all_releases() -> anyhow::Result<Vec<Self>> {
-        let response = reqwest::get(NODE_DISTRIBUTIONS_URL).await?;
+        let response = reqwest::get(NODE_DISTRIBUTIONS_INDEX_URL).await?;
         if !response.status().is_success() {
             anyhow::bail!("Failed to fetch releases: {}", response.status());
         }
