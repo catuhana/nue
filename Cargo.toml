@@ -3,7 +3,7 @@ name = "nue"
 description = "Node installer, made properly."
 version = "0.0.0"
 edition = "2021"
-rust-version = "1.79.0"
+rust-version = "1.80.0"
 
 [profile.release]
 opt-level = "z"

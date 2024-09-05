@@ -1,5 +1,3 @@
 fn main() {
-    if cfg!(windows) {
-        panic!("Nue is not supported on Windows.");
-    }
+    assert!(!cfg!(windows), "Nue is not supported on Windows");
 }

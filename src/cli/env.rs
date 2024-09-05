@@ -35,8 +35,8 @@ fn available_shell_profiles() -> Vec<&'static str> {
     let shell = env::var("SHELL").ok().and_then(|shell_path| {
         Path::new(&shell_path)
             .file_name()
-            .and_then(|os_str| os_str.to_str())
-            .map(|s| s.to_string())
+            .and_then(std::ffi::OsStr::to_str)
+            .map(std::string::ToString::to_string)
     });
 
     let mut profiles = vec!["~/.profile"];

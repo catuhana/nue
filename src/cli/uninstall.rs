@@ -40,10 +40,7 @@ async fn files_in_home_containing(substring: &str) -> anyhow::Result<Vec<String>
 
         match fs::read_to_string(&path).await {
             Ok(contents) if contents.contains(substring) => {
-                matching_files.push(format!(
-                    "~/{}",
-                    path.file_name().unwrap().to_string_lossy().to_string()
-                ));
+                matching_files.push(format!("~/{}", path.file_name().unwrap().to_string_lossy()));
             }
             _ => {}
         }
