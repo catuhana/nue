@@ -1,6 +1,9 @@
 #[derive(Debug)]
 pub enum Platform {
+    #[cfg(target_os = "linux")]
     Linux(Arch),
+    #[cfg(target_os = "macos")]
+    Mac(Arch),
 }
 
 // TODO: Create an enum similar to this for `NodeRelease`'s `files` field.
@@ -22,27 +25,62 @@ impl Platform {
     pub const fn get_system_platform() -> Self {
         #[cfg(target_arch = "aarch64")]
         {
-            Self::Linux(Arch::ARM64)
+            #[cfg(target_os = "linux")]
+            {
+                Self::Linux(Arch::ARM64)
+            }
+            #[cfg(target_os = "macos")]
+            {
+                Self::Mac(Arch::ARM64)
+            }
         }
 
         #[cfg(target_arch = "arm")]
         {
-            Self::Linux(Arch::ARMv7l)
+            #[cfg(target_os = "linux")]
+            {
+                Self::Linux(Arch::ARMv7l)
+            }
+            #[cfg(target_os = "macos")]
+            {
+                Self::Mac(Arch::ARMv7l)
+            }
         }
 
         #[cfg(target_arch = "powerpc64")]
         {
-            Self::Linux(Arch::Ppc64le)
+            #[cfg(target_os = "linux")]
+            {
+                Self::Linux(Arch::Ppc64le)
+            }
+            #[cfg(target_os = "macos")]
+            {
+                Self::Mac(Arch::Ppc64le)
+            }
         }
 
         #[cfg(target_arch = "s390x")]
         {
-            Self::Linux(Arch::S390x)
+            #[cfg(target_os = "linux")]
+            {
+                Self::Linux(Arch::S390x)
+            }
+            #[cfg(target_os = "macos")]
+            {
+                Self::Mac(Arch::S390x)
+            }
         }
 
         #[cfg(target_arch = "x86_64")]
         {
-            Self::Linux(Arch::X64)
+            #[cfg(target_os = "linux")]
+            {
+                Self::Linux(Arch::X64)
+            }
+            #[cfg(target_os = "macos")]
+            {
+                Self::Mac(Arch::X64)
+            }
         }
     }
 }
@@ -50,7 +88,10 @@ impl Platform {
 impl std::fmt::Display for Platform {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            #[cfg(target_os = "linux")]
             Self::Linux(arch) => write!(f, "linux-{arch}"),
+            #[cfg(target_os = "macos")]
+            Self::Mac(arch) => write!(f, "darwin-{arch}"),
         }
     }
 }
