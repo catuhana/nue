@@ -22,38 +22,30 @@ impl NueCommand for CommandArguments {
             fs::write(NUE_PATH.join("env"), environment_script).await?;
         }
 
-        let mut possible_shell_profiles: Vec<&str> = vec!["~/.profile"];
-        match get_current_shell() {
-            Some(shell) => match shell.as_str() {
-                "zsh" => {
-                    possible_shell_profiles.append(&mut vec![
-                        "~/.zprofile",
-                        "~/.zshenv",
-                        "~/.zshrc",
-                    ]);
-                }
-                "bash" => {
-                    possible_shell_profiles.append(&mut vec!["~/.bash_profile", "~/.bashrc"]);
-                }
-                _ => {}
-            },
-            None => {}
-        }
-
         println!(
             "Created env script at `$HOME/.nue/env`. Source it in your shell profile ({}) to use nue.",
-            possible_shell_profiles.join(", ")
+            available_shell_profiles().join(", ")
         );
 
         Ok(())
     }
 }
 
-fn get_current_shell() -> Option<String> {
-    env::var("SHELL").ok().and_then(|shell_path| {
+fn available_shell_profiles() -> Vec<&'static str> {
+    let shell = env::var("SHELL").ok().and_then(|shell_path| {
         Path::new(&shell_path)
             .file_name()
             .and_then(|os_str| os_str.to_str())
             .map(|s| s.to_string())
-    })
+    });
+
+    let mut profiles = vec!["~/.profile"];
+    let additional_profiles = match shell.as_deref() {
+        Some("zsh") => vec!["~/.zprofile", "~/.zshenv", "~/.zshrc"],
+        Some("bash") => vec!["~/.bash_profile", "~/.bashrc"],
+        _ => vec![],
+    };
+
+    profiles.extend(additional_profiles);
+    profiles
 }
