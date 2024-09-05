@@ -61,7 +61,7 @@ impl NueCommand for CommandArguments {
                 release.install().await?;
                 println!("Node v{} is now installed!", release.version);
 
-                if !utils::check::path_contains(".nue/bin")? {
+                if !utils::check::path_contains(".nue/node/bin")? {
                     println!("Node is installed but its binary path is not added to `PATH`. Run `nue env` to generate environment script.");
                 }
             }
