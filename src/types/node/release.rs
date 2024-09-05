@@ -4,7 +4,7 @@ use async_compression::tokio::bufread::XzDecoder;
 use futures::TryStreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{de::Error as DeError, Deserialize, Deserializer};
-use tokio::io::BufReader;
+use tokio::{fs, io::BufReader};
 use tokio_tar::Archive;
 use tokio_util::io::StreamReader;
 
@@ -64,7 +64,7 @@ impl NodeRelease {
             .await?;
 
         if self.check_installed()? {
-            tokio::fs::remove_dir_all(&*NUE_PATH).await?;
+            fs::remove_dir_all(&*NUE_PATH).await?;
         }
 
         dircpy::copy_dir(
@@ -82,7 +82,7 @@ impl NodeRelease {
             return Ok(false);
         }
 
-        let version = process::Command::new(NUE_PATH.join("bin").join("node"))
+        let version = process::Command::new(NUE_PATH.join("node").join("bin").join("node"))
             .arg("--version")
             .output()?
             .stdout;
