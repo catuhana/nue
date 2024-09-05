@@ -6,7 +6,12 @@ use tokio::io::BufReader;
 use tokio_tar::Archive;
 use tokio_util::io::StreamReader;
 
-use crate::{exts::HyperlinkExt, globals::NUE_PATH, types};
+use crate::{
+    constants::{NODE_DISTRIBUTIONS_URL, NODE_GITHUB_URL},
+    exts::HyperlinkExt,
+    globals::NUE_PATH,
+    types,
+};
 
 use super::LTS;
 
@@ -87,21 +92,27 @@ impl NodeRelease {
         Ok(true)
     }
 
+    pub async fn get_all_releases() -> anyhow::Result<Vec<Self>> {
+        let response = reqwest::get(NODE_DISTRIBUTIONS_URL).await?;
+        if !response.status().is_success() {
+            anyhow::bail!("Failed to fetch releases: {}", response.status());
+        }
+
+        let releases: Vec<Self> = response.json().await?;
+        Ok(releases)
+    }
+
     pub fn get_download_url(&self) -> String {
         format!(
             "{}/v{}/{}.tar.xz",
-            types::node::URLs::default().get_distribution_path(),
+            NODE_DISTRIBUTIONS_URL,
             self.version,
             self.get_archive_string()
         )
     }
 
     pub fn get_github_release_url(&self) -> String {
-        format!(
-            "{}/releases/tag/v{}",
-            types::node::URLs::default().github,
-            self.version
-        )
+        format!("{}/releases/tag/v{}", NODE_GITHUB_URL, self.version)
     }
 
     pub fn get_archive_string(&self) -> String {

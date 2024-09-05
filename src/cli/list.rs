@@ -35,7 +35,7 @@ impl NueCommand for CommandArguments {
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
         progress_bar.set_message("Fetching releases...");
-        let releases = types::node::URLs::default().fetch_releases().await?;
+        let releases = types::node::Release::get_all_releases().await?;
 
         progress_bar.set_message("Filtering releases...");
         let releases: Vec<_> = releases.into_iter().filter(|release| {

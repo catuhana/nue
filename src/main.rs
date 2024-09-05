@@ -3,6 +3,7 @@ use clap::Parser;
 use cli::NueCommand;
 
 mod cli;
+mod constants;
 mod exts;
 mod globals;
 mod types;
