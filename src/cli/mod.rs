@@ -6,7 +6,7 @@ mod list;
 mod uninstall;
 
 pub trait NueCommand {
-    async fn run(&self) -> anyhow::Result<()>;
+    fn run(&self) -> anyhow::Result<()>;
 }
 
 #[derive(Parser, Debug)]

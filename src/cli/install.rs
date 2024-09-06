@@ -25,12 +25,12 @@ pub struct CommandArguments {
 }
 
 impl NueCommand for CommandArguments {
-    async fn run(&self) -> anyhow::Result<()> {
+    fn run(&self) -> anyhow::Result<()> {
         let progress_bar = ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
         progress_bar.set_message("Fetching releases...");
-        let releases = types::node::Release::get_all_releases().await?;
+        let releases = types::node::Release::get_all_releases()?;
 
         progress_bar.set_message("Filtering releases...");
         let latest_release = match &self.version {
@@ -58,7 +58,7 @@ impl NueCommand for CommandArguments {
                     return Ok(());
                 }
 
-                release.install().await?;
+                release.install()?;
                 println!("Node v{} is now installed!", release.version);
 
                 if !utils::check::path_contains(".nue/node/bin")? {

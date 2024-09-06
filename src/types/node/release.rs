@@ -1,12 +1,9 @@
-use std::process;
+use std::{io::Read, process, time};
 
-use async_compression::tokio::bufread::XzDecoder;
-use futures::TryStreamExt;
+use dircpy::CopyBuilder;
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{de::Error as DeError, Deserialize, Deserializer};
-use tokio::{fs, io::BufReader};
-use tokio_tar::Archive;
-use tokio_util::io::StreamReader;
+use tar::Archive;
 
 use crate::{
     constants::{NODE_DISTRIBUTIONS_INDEX_URL, NODE_DISTRIBUTIONS_URL, NODE_GITHUB_URL},
@@ -26,12 +23,12 @@ pub struct NodeRelease {
 }
 
 impl NodeRelease {
-    pub async fn install(&self) -> anyhow::Result<()> {
+    pub fn install(&self) -> anyhow::Result<()> {
         if !self.is_supported_by_current_platform() {
             anyhow::bail!("This release is not supported by the current platform.");
         }
 
-        let response = reqwest::get(self.get_download_url()).await?;
+        let mut response = reqwest::blocking::get(self.get_download_url())?;
         if !response.status().is_success() {
             anyhow::bail!("Failed to download release: {}", response.status());
         }
@@ -41,38 +38,41 @@ impl NodeRelease {
                 ProgressStyle::default_bar()
                     .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} {bytes_per_sec} ({eta})")?
                     .progress_chars("-Cc·")
-            )
-            .with_message(
-                format!(
-                    "Downloading and unpacking version {}",
-                    format!("v{}", self.version).hyperlink(self.get_github_release_url())
-                )
             );
 
-        let data_stream = response
-            .bytes_stream()
-            .map_ok(|chunk| {
-                download_progress_bar.inc(chunk.len() as u64);
-                chunk
-            })
-            .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err));
+        download_progress_bar.set_message(format!(
+            "Downloading version {}",
+            format!("v{}", self.version).hyperlink(self.get_github_release_url())
+        ));
+        let mut file = Vec::new();
+        let mut chunk = vec![0; 8192];
+        while let Ok(read_bytes) = response.read(&mut chunk) {
+            if read_bytes == 0 {
+                break;
+            }
 
-        let unpack_temporary_folder = types::temp::Folder::new()?;
-        let decompressed = XzDecoder::new(BufReader::new(StreamReader::new(data_stream)));
-        Archive::new(decompressed)
-            .unpack(unpack_temporary_folder.path())
-            .await?;
-
-        if self.check_installed()? {
-            fs::remove_dir_all(&*NUE_PATH).await?;
+            file.extend_from_slice(&chunk[..read_bytes]);
+            download_progress_bar.inc(read_bytes as u64);
         }
+        download_progress_bar.finish_and_clear();
 
-        dircpy::copy_dir(
-            unpack_temporary_folder
-                .path()
-                .join(self.get_archive_string()),
+        let progress_bar = ProgressBar::new_spinner();
+        progress_bar.enable_steady_tick(time::Duration::from_millis(120));
+
+        progress_bar.set_message("Decompressing archive...");
+        let decompressed = liblzma::decode_all(file.as_slice())?;
+
+        progress_bar.set_message("Unpacking archive...");
+        let temporary_folder = types::temp::Folder::new()?;
+        Archive::new(decompressed.as_slice()).unpack(temporary_folder.path())?;
+        CopyBuilder::new(
+            temporary_folder.path().join(self.get_archive_string()),
             &*NUE_PATH.join("node"),
-        )?;
+        )
+        .overwrite_if_newer(true)
+        .run()?;
+
+        progress_bar.finish_and_clear();
 
         Ok(())
     }
@@ -94,13 +94,13 @@ impl NodeRelease {
         Ok(true)
     }
 
-    pub async fn get_all_releases() -> anyhow::Result<Vec<Self>> {
-        let response = reqwest::get(NODE_DISTRIBUTIONS_INDEX_URL).await?;
+    pub fn get_all_releases() -> anyhow::Result<Vec<Self>> {
+        let response = reqwest::blocking::get(NODE_DISTRIBUTIONS_INDEX_URL)?;
         if !response.status().is_success() {
             anyhow::bail!("Failed to fetch releases: {}", response.status());
         }
 
-        let releases: Vec<Self> = response.json().await?;
+        let releases: Vec<Self> = response.json()?;
         Ok(releases)
     }
 

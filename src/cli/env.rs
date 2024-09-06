@@ -1,7 +1,6 @@
-use std::{env, path::Path};
+use std::{env, fs, path::Path};
 
 use clap::Args;
-use tokio::fs;
 
 use crate::globals::NUE_PATH;
 
@@ -11,15 +10,15 @@ use super::NueCommand;
 pub struct CommandArguments;
 
 impl NueCommand for CommandArguments {
-    async fn run(&self) -> anyhow::Result<()> {
+    fn run(&self) -> anyhow::Result<()> {
         let environment_script = include_str!("../../resources/env.sh");
 
         if !NUE_PATH.try_exists()? {
-            fs::create_dir_all(&*NUE_PATH).await?;
+            fs::create_dir_all(&*NUE_PATH)?;
         }
 
         if !NUE_PATH.join("env").exists() {
-            fs::write(NUE_PATH.join("env"), environment_script).await?;
+            fs::write(NUE_PATH.join("env"), environment_script)?;
         }
 
         println!(

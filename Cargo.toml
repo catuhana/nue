@@ -12,19 +12,16 @@ lto = "fat"
 
 [dependencies]
 anyhow = "1.0.86"
-async-compression = { version = "0.4.12", features = ["xz", "tokio"] }
 clap = { version = "4.5.17", features = ["derive"] }
 dircpy = "0.3.19"
 dirs = "5.0.1"
 fastrand = "2.1.1"
-futures = "0.3.30"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
 inquire = "0.7.5"
+liblzma = "0.3.4"
 node-semver = { git = "https://github.com/catuhana/node-semver-rs", features = [
   "serde",
 ] }
 reqwest = { version = "0.12.7", features = ["blocking", "json", "stream"] }
 serde = { version = "1.0.209", features = ["derive"] }
-tokio = { version = "1.40.0", features = ["rt-multi-thread", "sync", "macros"] }
-tokio-tar = "0.3.1"
-tokio-util = { version = "0.7.12", features = ["io"] }
+tar = "0.4.41"

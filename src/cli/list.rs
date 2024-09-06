@@ -30,12 +30,12 @@ pub struct CommandArguments {
 }
 
 impl NueCommand for CommandArguments {
-    async fn run(&self) -> anyhow::Result<()> {
+    fn run(&self) -> anyhow::Result<()> {
         let progress_bar = ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
 
         progress_bar.set_message("Fetching releases...");
-        let releases = types::node::Release::get_all_releases().await?;
+        let releases = types::node::Release::get_all_releases()?;
 
         progress_bar.set_message("Filtering releases...");
         let releases: Vec<_> = releases.into_iter().filter(|release| {
@@ -89,8 +89,7 @@ impl NueCommand for CommandArguments {
                 version: install::VersionInputs::VersionString(release.version.to_string()),
                 force: self.force,
             }
-            .run()
-            .await?;
+            .run()?;
         }
 
         Ok(())
