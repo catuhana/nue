@@ -12,13 +12,14 @@ pub struct CommandArguments;
 impl NueCommand for CommandArguments {
     fn run(&self) -> anyhow::Result<()> {
         let environment_script = include_str!("../../resources/env.sh");
+        let nue_env_path = NUE_PATH.join("env");
 
         if !NUE_PATH.try_exists()? {
             fs::create_dir_all(&*NUE_PATH)?;
         }
 
-        if !NUE_PATH.join("env").exists() {
-            fs::write(NUE_PATH.join("env"), environment_script)?;
+        if !nue_env_path.exists() {
+            fs::write(nue_env_path, environment_script)?;
         }
 
         println!(

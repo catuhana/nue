@@ -78,11 +78,12 @@ impl NodeRelease {
     }
 
     pub fn check_installed(&self) -> anyhow::Result<bool> {
-        if !NUE_PATH.join("node").try_exists()? {
+        let nue_node_path = NUE_PATH.join("node");
+        if !nue_node_path.try_exists()? {
             return Ok(false);
         }
 
-        let version = process::Command::new(NUE_PATH.join("node").join("bin").join("node"))
+        let version = process::Command::new(nue_node_path.join("bin").join("node"))
             .arg("--version")
             .output()?
             .stdout;
