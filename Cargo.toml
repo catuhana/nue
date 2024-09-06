@@ -28,4 +28,3 @@ serde = { version = "1.0.209", features = ["derive"] }
 tokio = { version = "1.40.0", features = ["rt-multi-thread", "sync", "macros"] }
 tokio-tar = "0.3.1"
 tokio-util = { version = "0.7.12", features = ["io"] }
-walkdir = "2.5.0"

@@ -1016,7 +1016,6 @@ dependencies = [
  "tokio",
  "tokio-tar",
  "tokio-util",
- "walkdir",
 ]
 
 [[package]]
