@@ -20,10 +20,6 @@ pub struct CommandArguments {
     #[arg(default_value_t = VersionInputs::default())]
     version: VersionInputs,
 
-    /// Show the latest version.
-    #[arg(long)]
-    latest: bool,
-
     /// Force re-installation of the selected version.
     #[arg(long)]
     force: bool,
@@ -52,14 +48,7 @@ impl NueCommand for CommandArguments {
         }).collect();
         progress_bar.finish_and_clear();
 
-        if self.latest {
-            let latest_version = &releases
-                .first()
-                .expect("release not found, somehow.")
-                .version;
-
-            println!("v{latest_version}");
-        } else if releases.is_empty() {
+        if releases.is_empty() {
             anyhow::bail!("No release found with given version or LTS code name.");
         } else if let Ok(Some(selected_version)) = Select::new(
             "Select Node Version",
