@@ -28,11 +28,13 @@ impl NodeRelease {
             anyhow::bail!("This release is not supported by the current platform.");
         }
 
+        let nue_node_path = NUE_PATH.join("node");
         let temporary_folder = types::temp::Folder::new()?;
+
         for cache in temporary_folder.find_caches()? {
             let cached_node = cache.join(self.get_archive_string());
             if cached_node.try_exists()? {
-                CopyBuilder::new(cached_node, &*NUE_PATH.join("node"))
+                CopyBuilder::new(cached_node, nue_node_path)
                     .overwrite(true)
                     .run()?;
 
@@ -56,14 +58,14 @@ impl NodeRelease {
             "Downloading version {}",
             format!("v{}", self.version).hyperlink(self.get_github_release_url())
         ));
-        let mut file = Vec::new();
-        let mut chunk = vec![0; 8192];
-        while let Ok(read_bytes) = response.read(&mut chunk) {
+        let mut file_chunks = Vec::new();
+        let mut buffer = vec![0; 8192];
+        while let Ok(read_bytes) = response.read(&mut buffer) {
             if read_bytes == 0 {
                 break;
             }
 
-            file.extend_from_slice(&chunk[..read_bytes]);
+            file_chunks.extend_from_slice(&buffer[..read_bytes]);
             download_progress_bar.inc(read_bytes as u64);
         }
         download_progress_bar.finish_and_clear();
@@ -71,16 +73,16 @@ impl NodeRelease {
         let progress_bar = ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(time::Duration::from_millis(120));
 
-        progress_bar.set_message("Decompressing archive...");
-        let decompressed = liblzma::decode_all(file.as_slice())?;
+        progress_bar.set_message("Decoding archive...");
+        let decoded = liblzma::decode_all(file_chunks.as_slice())?;
 
         progress_bar.set_message("Unpacking archive...");
-        Archive::new(decompressed.as_slice()).unpack(temporary_folder.get_full_path())?;
+        Archive::new(decoded.as_slice()).unpack(temporary_folder.get_full_path())?;
         CopyBuilder::new(
             temporary_folder
                 .get_full_path()
                 .join(self.get_archive_string()),
-            &*NUE_PATH.join("node"),
+            nue_node_path,
         )
         .overwrite(true)
         .run()?;
