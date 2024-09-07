@@ -45,7 +45,7 @@ impl NueCommand for CommandArguments {
             VersionInputs::Lts(Some(code_name)) => releases.iter().find(|release| {
                 matches!(
                     &release.lts,
-                    types::node::LTS::CodeName(name) if &name.to_lowercase() == code_name
+                    types::node::Lts::CodeName(name) if &name.to_lowercase() == code_name
                 )
             }),
             VersionInputs::Lts(None) => releases.iter().find(|release| release.lts.is_code_name()),
@@ -63,11 +63,9 @@ impl NueCommand for CommandArguments {
                     return Ok(());
                 }
 
-                if release
-                    .install_from_cache(cache::find_cached_node_downloads()?)
-                    .is_err()
-                {
-                    release.install()?;
+                match release.install_from_cache(cache::find_cached_node_downloads()?) {
+                    Ok(()) => (),
+                    Err(_) => release.install()?,
                 }
 
                 println!("Node v{} is now installed!", release.version);

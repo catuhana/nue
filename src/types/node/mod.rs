@@ -1,4 +1,4 @@
-pub use lts::LTS;
+pub use lts::Lts;
 pub use release::Release;
 
 mod lts;

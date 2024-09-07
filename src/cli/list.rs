@@ -43,7 +43,7 @@ impl NueCommand for CommandArguments {
 
             match &self.version {
                 VersionInputs::VersionString(version) => format!("{}", release.version).starts_with(version),
-                VersionInputs::Lts(Some(code_name)) => matches!(&release.lts, types::node::LTS::CodeName(name) if *name.to_lowercase() == *code_name),
+                VersionInputs::Lts(Some(code_name)) => matches!(&release.lts, types::node::Lts::CodeName(name) if *name.to_lowercase() == *code_name),
                 VersionInputs::Lts(None) => release.lts.is_code_name(),
                 VersionInputs::All => true,
             }

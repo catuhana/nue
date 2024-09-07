@@ -12,7 +12,7 @@ where
         format!(
             "\u{001B}]8;;{}\u{0007}{}\u{001B}]8;;\u{0007}",
             url.to_string(),
-            self.to_string()
+            self
         )
     }
 }

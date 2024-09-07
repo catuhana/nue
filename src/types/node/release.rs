@@ -12,14 +12,14 @@ use crate::{
     types,
 };
 
-use super::LTS;
+use super::Lts;
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Release {
     #[serde(deserialize_with = "deserialise_version_v_prefix")]
     pub version: node_semver::Version,
     pub files: Vec<String>,
-    pub lts: LTS,
+    pub lts: Lts,
 }
 
 impl Release {
