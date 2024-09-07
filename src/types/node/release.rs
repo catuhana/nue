@@ -28,12 +28,12 @@ impl Release {
             anyhow::bail!("This release is not supported by the current platform.");
         }
 
-        let mut response = reqwest::blocking::get(self.get_download_url())?;
-        if !response.status().is_success() {
+        let response = ureq::get(&self.get_download_url()).call()?;
+        if !response.status() == 200 {
             anyhow::bail!("Failed to download release: {}", response.status());
         }
 
-        let download_progress_bar = ProgressBar::new(response.content_length().unwrap_or_default())
+        let download_progress_bar = ProgressBar::new(response.header("Content-Length").unwrap().parse::<u64>()?)
             .with_style(
                 ProgressStyle::default_bar()
                     .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} {bytes_per_sec} ({eta})")?
@@ -46,7 +46,8 @@ impl Release {
         ));
         let mut file_chunks = Vec::new();
         let mut buffer = vec![0; 8192];
-        while let Ok(read_bytes) = response.read(&mut buffer) {
+        let mut reader = response.into_reader();
+        while let Ok(read_bytes) = reader.read(&mut buffer) {
             if read_bytes == 0 {
                 break;
             }
@@ -116,12 +117,12 @@ impl Release {
     }
 
     pub fn get_all_releases() -> anyhow::Result<Vec<Self>> {
-        let response = reqwest::blocking::get(NODE_DISTRIBUTIONS_INDEX_URL)?;
-        if !response.status().is_success() {
+        let response = ureq::get(NODE_DISTRIBUTIONS_INDEX_URL).call()?;
+        if !response.status() == 200 {
             anyhow::bail!("Failed to fetch releases: {}", response.status());
         }
 
-        let releases: Vec<Self> = response.json()?;
+        let releases: Vec<Self> = response.into_json()?;
         Ok(releases)
     }
 
