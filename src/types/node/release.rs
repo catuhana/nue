@@ -28,6 +28,18 @@ impl NodeRelease {
             anyhow::bail!("This release is not supported by the current platform.");
         }
 
+        let temporary_folder = types::temp::Folder::new()?;
+        for cache in temporary_folder.find_caches()? {
+            let cached_node = cache.join(self.get_archive_string());
+            if cached_node.try_exists()? {
+                CopyBuilder::new(cached_node, &*NUE_PATH.join("node"))
+                    .overwrite(true)
+                    .run()?;
+
+                return Ok(());
+            }
+        }
+
         let mut response = reqwest::blocking::get(self.get_download_url())?;
         if !response.status().is_success() {
             anyhow::bail!("Failed to download release: {}", response.status());
@@ -63,13 +75,14 @@ impl NodeRelease {
         let decompressed = liblzma::decode_all(file.as_slice())?;
 
         progress_bar.set_message("Unpacking archive...");
-        let temporary_folder = types::temp::Folder::new()?;
-        Archive::new(decompressed.as_slice()).unpack(temporary_folder.path())?;
+        Archive::new(decompressed.as_slice()).unpack(temporary_folder.get_full_path())?;
         CopyBuilder::new(
-            temporary_folder.path().join(self.get_archive_string()),
+            temporary_folder
+                .get_full_path()
+                .join(self.get_archive_string()),
             &*NUE_PATH.join("node"),
         )
-        .overwrite_if_newer(true)
+        .overwrite(true)
         .run()?;
 
         progress_bar.finish_and_clear();

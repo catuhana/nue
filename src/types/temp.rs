@@ -1,34 +1,55 @@
+use std::{fs, path};
+
+use anyhow::Ok;
+
 use crate::utils;
 
 #[derive(Debug)]
-pub struct Folder(std::path::PathBuf);
+pub struct Folder {
+    system_temp_path: path::PathBuf,
+    pub prefix: String,
+    pub uid: String,
+}
 
 impl Folder {
     pub fn new() -> anyhow::Result<Self> {
-        let system_temp_folder = std::env::temp_dir();
-        let temp_folder_path =
-            system_temp_folder.join(format!("nue-{}", utils::random::generate_string(8)));
+        let uid = utils::random::generate_string(8);
 
-        std::fs::create_dir_all(&temp_folder_path)?;
+        let system_temp_path = std::env::temp_dir();
+        let prefix = String::from("nue");
+        let path = system_temp_path.join(format!("{prefix}-{uid}"));
 
-        Ok(Self(temp_folder_path))
+        fs::create_dir(&path)?;
+
+        Ok(Self {
+            system_temp_path,
+            prefix,
+            uid,
+        })
     }
 
-    pub fn delete(&self) -> anyhow::Result<()> {
-        std::fs::remove_dir_all(&self.0)?;
+    pub fn find_caches(&self) -> anyhow::Result<Vec<path::PathBuf>> {
+        let mut caches = vec![];
+        for entry in fs::read_dir(&self.system_temp_path)? {
+            let entry = entry?;
 
-        Ok(())
-    }
+            if !entry.path().is_dir() {
+                continue;
+            }
 
-    pub fn path(&self) -> &std::path::Path {
-        &self.0
-    }
-}
-
-impl Drop for Folder {
-    fn drop(&mut self) {
-        if let Err(err) = self.delete() {
-            eprintln!("Failed to delete temporary folder: {err}");
+            if entry
+                .file_name()
+                .to_string_lossy()
+                .starts_with(&self.prefix)
+            {
+                caches.push(entry.path());
+            }
         }
+
+        Ok(caches)
+    }
+
+    pub fn get_full_path(&self) -> path::PathBuf {
+        self.system_temp_path.join(format!("nue-{}", self.uid))
     }
 }
