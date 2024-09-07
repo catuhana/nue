@@ -11,9 +11,9 @@ strip = "debuginfo"
 lto = "fat"
 
 [dependencies]
-anyhow = "1.0.86"
+anyhow = "1.0.87"
 clap = { version = "4.5.17", features = ["derive"] }
-dircpy = { git = "https://github.com/catuhana/dircpy", version = "0.3.18", default-features = false }
+dircpy = { git = "https://github.com/catuhana/dircpy", default-features = false }
 dirs = "5.0.1"
 fastrand = "2.1.1"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
@@ -23,5 +23,5 @@ node-semver = { git = "https://github.com/catuhana/node-semver-rs", features = [
   "serde",
 ] }
 reqwest = { version = "0.12.7", features = ["blocking", "json", "stream"] }
-serde = { version = "1.0.209", features = ["derive"] }
+serde = { version = "1.0.210", features = ["derive"] }
 tar = "0.4.41"
