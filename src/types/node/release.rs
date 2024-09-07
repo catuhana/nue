@@ -1,4 +1,4 @@
-use std::{io::Read, path, process, time};
+use std::{env, io::Read, path, process, time};
 
 use dircpy::CopyBuilder;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -62,14 +62,12 @@ impl NodeRelease {
         progress_bar.set_message("Decoding archive...");
         let decoded = liblzma::decode_all(file_chunks.as_slice())?;
 
-        let temporary_folder = types::temp::Folder::new()?;
+        let temporary_folder = env::temp_dir().join("nue");
 
         progress_bar.set_message("Unpacking archive...");
-        Archive::new(decoded.as_slice()).unpack(temporary_folder.get_full_path())?;
+        Archive::new(decoded.as_slice()).unpack(&temporary_folder)?;
         CopyBuilder::new(
-            temporary_folder
-                .get_full_path()
-                .join(self.get_archive_string()),
+            temporary_folder.join(self.get_archive_string()),
             NUE_PATH.join("node"),
         )
         .overwrite(true)
@@ -85,10 +83,9 @@ impl NodeRelease {
 
         progress_bar.set_message("Looking for caches to install from...");
         for cache in cached_downloads {
-            let cached_node = cache.join(self.get_archive_string());
-            if cached_node.try_exists()? {
+            if cache.try_exists()? {
                 progress_bar.set_message("Installing from cache...");
-                CopyBuilder::new(cached_node, NUE_PATH.join("node"))
+                CopyBuilder::new(cache, NUE_PATH.join("node"))
                     .overwrite(true)
                     .run()?;
                 progress_bar.finish_and_clear();
