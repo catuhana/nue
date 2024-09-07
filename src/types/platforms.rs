@@ -6,81 +6,61 @@ pub enum Platform {
     Mac(Arch),
 }
 
-// TODO: Create an enum similar to this for `NodeRelease`'s `files` field.
 #[derive(Debug)]
 pub enum Arch {
-    #[cfg(target_arch = "aarch64")]
+    #[cfg(all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos")))]
     ARM64,
-    #[cfg(target_arch = "arm")]
+    #[cfg(all(target_arch = "arm", target_os = "linux"))]
     ARMv7l,
-    #[cfg(target_arch = "powerpc64")]
+    #[cfg(all(target_arch = "powerpc64", target_os = "linux"))]
     Ppc64le,
-    #[cfg(target_arch = "s390x")]
+    #[cfg(all(target_arch = "s390x", target_os = "linux"))]
     S390x,
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", any(target_os = "linux", target_os = "macos")))]
     X64,
 }
 
 impl Platform {
     pub const fn get_system_platform() -> Self {
-        #[cfg(target_arch = "aarch64")]
+        #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
         {
-            #[cfg(target_os = "linux")]
-            {
-                Self::Linux(Arch::ARM64)
-            }
-            #[cfg(target_os = "macos")]
-            {
-                Self::Mac(Arch::ARM64)
-            }
+            Self::Linux(Arch::ARM64)
         }
-
-        #[cfg(target_arch = "arm")]
+        #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
         {
-            #[cfg(target_os = "linux")]
-            {
-                Self::Linux(Arch::ARMv7l)
-            }
-            #[cfg(target_os = "macos")]
-            {
-                Self::Mac(Arch::ARMv7l)
-            }
+            Self::Mac(Arch::ARM64)
         }
-
-        #[cfg(target_arch = "powerpc64")]
+        #[cfg(all(target_os = "linux", target_arch = "arm"))]
         {
-            #[cfg(target_os = "linux")]
-            {
-                Self::Linux(Arch::Ppc64le)
-            }
-            #[cfg(target_os = "macos")]
-            {
-                Self::Mac(Arch::Ppc64le)
-            }
+            Self::Linux(Arch::ARMv7l)
         }
-
-        #[cfg(target_arch = "s390x")]
+        #[cfg(all(target_os = "macos", target_arch = "arm"))]
         {
-            #[cfg(target_os = "linux")]
-            {
-                Self::Linux(Arch::S390x)
-            }
-            #[cfg(target_os = "macos")]
-            {
-                Self::Mac(Arch::S390x)
-            }
+            Self::Mac(Arch::ARMv7l)
         }
-
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_os = "linux", target_arch = "powerpc64"))]
         {
-            #[cfg(target_os = "linux")]
-            {
-                Self::Linux(Arch::X64)
-            }
-            #[cfg(target_os = "macos")]
-            {
-                Self::Mac(Arch::X64)
-            }
+            Self::Linux(Arch::Ppc64le)
+        }
+        #[cfg(all(target_os = "macos", target_arch = "powerpc64"))]
+        {
+            Self::Mac(Arch::Ppc64le)
+        }
+        #[cfg(all(target_os = "linux", target_arch = "s390x"))]
+        {
+            Self::Linux(Arch::S390x)
+        }
+        #[cfg(all(target_os = "macos", target_arch = "s390x"))]
+        {
+            Self::Mac(Arch::S390x)
+        }
+        #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+        {
+            Self::Linux(Arch::X64)
+        }
+        #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+        {
+            Self::Mac(Arch::X64)
         }
     }
 }
