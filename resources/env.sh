@@ -3,6 +3,6 @@
 case ":${PATH}:" in
 *:"$HOME/.nue/node/bin":*) ;;
 *)
-  export PATH="$PATH:$HOME/.nue/node/bin"
+  export PATH="$HOME/.nue/node/bin:$PATH"
   ;;
 esac
