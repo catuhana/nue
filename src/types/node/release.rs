@@ -1,9 +1,9 @@
 use std::{env, io::Read, path, process, time};
 
+use binstall_tar::Archive;
 use dircpy::CopyBuilder;
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{de::Error as DeError, Deserialize, Deserializer};
-use tar::Archive;
 
 use crate::{
     constants::{NODE_DISTRIBUTIONS_INDEX_URL, NODE_DISTRIBUTIONS_URL, NODE_GITHUB_URL},
