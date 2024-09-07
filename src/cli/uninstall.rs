@@ -11,12 +11,13 @@ pub struct CommandArguments;
 
 impl NueCommand for CommandArguments {
     fn run(&self) -> anyhow::Result<()> {
-        if !NUE_PATH.join("node").try_exists()? {
+        let nue_node_path = NUE_PATH.join("node");
+        if !nue_node_path.try_exists()? {
             println!("Node is not installed.");
             return Ok(());
         }
 
-        fs::remove_dir_all(&*NUE_PATH)?;
+        fs::remove_dir_all(nue_node_path)?;
         println!("Node uninstalled successfully.");
 
         if utils::check::path_contains(".nue/node/bin")? {
