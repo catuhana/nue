@@ -1,19 +1,21 @@
+use std::fmt;
+
 use serde::{de::Visitor, Deserialize, Deserializer};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum NodeLTS {
+pub enum LTS {
     CodeName(String),
     Bool,
 }
 
-impl NodeLTS {
+impl LTS {
     pub const fn is_code_name(&self) -> bool {
         matches!(self, Self::CodeName(_))
     }
 }
 
-impl std::fmt::Display for NodeLTS {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for LTS {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::CodeName(code_name) => write!(f, "{code_name}"),
             Self::Bool => write!(f, "false"),
@@ -21,28 +23,28 @@ impl std::fmt::Display for NodeLTS {
     }
 }
 
-impl<'de> Deserialize<'de> for NodeLTS {
+impl<'de> Deserialize<'de> for LTS {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_any(NodeLTSVisitor)
+        deserializer.deserialize_any(LTSVisitor)
     }
 }
 
-struct NodeLTSVisitor;
-impl<'de> Visitor<'de> for NodeLTSVisitor {
-    type Value = NodeLTS;
+struct LTSVisitor;
+impl<'de> Visitor<'de> for LTSVisitor {
+    type Value = LTS;
 
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("a string or a boolean")
     }
 
-    fn visit_bool<E>(self, _value: bool) -> Result<NodeLTS, E> {
-        Ok(NodeLTS::Bool)
+    fn visit_bool<E>(self, _value: bool) -> Result<LTS, E> {
+        Ok(LTS::Bool)
     }
 
-    fn visit_str<E>(self, value: &str) -> Result<NodeLTS, E> {
-        Ok(NodeLTS::CodeName(value.to_string()))
+    fn visit_str<E>(self, value: &str) -> Result<LTS, E> {
+        Ok(LTS::CodeName(value.to_string()))
     }
 }

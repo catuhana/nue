@@ -15,14 +15,14 @@ use crate::{
 use super::LTS;
 
 #[derive(Deserialize, Clone, Debug)]
-pub struct NodeRelease {
+pub struct Release {
     #[serde(deserialize_with = "deserialise_version_v_prefix")]
     pub version: node_semver::Version,
     pub files: Vec<String>,
     pub lts: LTS,
 }
 
-impl NodeRelease {
+impl Release {
     pub fn install(&self) -> anyhow::Result<()> {
         if !self.is_supported_by_current_platform() {
             anyhow::bail!("This release is not supported by the current platform.");
@@ -83,7 +83,7 @@ impl NodeRelease {
 
         progress_bar.set_message("Looking for caches to install from...");
         for cache in cached_downloads {
-            if cache.try_exists()? && cache.ends_with(&self.get_archive_string()) {
+            if cache.try_exists()? && cache.ends_with(self.get_archive_string()) {
                 progress_bar.set_message("Installing from cache...");
                 CopyBuilder::new(cache, NUE_PATH.join("node"))
                     .overwrite(true)

@@ -1,3 +1,5 @@
+use std::env;
+
 pub fn path_contains(s: &str) -> anyhow::Result<bool> {
-    Ok(std::env::var("PATH")?.contains(s))
+    Ok(env::var("PATH")?.contains(s))
 }

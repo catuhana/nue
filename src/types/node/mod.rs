@@ -1,5 +1,5 @@
-pub use lts::NodeLTS as LTS;
-pub use release::NodeRelease as Release;
+pub use lts::LTS;
+pub use release::Release;
 
 mod lts;
 mod release;

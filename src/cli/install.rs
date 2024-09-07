@@ -1,3 +1,5 @@
+use std::{fmt, str, time};
+
 use clap::Args;
 use indicatif::ProgressBar;
 
@@ -30,7 +32,7 @@ pub struct CommandArguments {
 impl NueCommand for CommandArguments {
     fn run(&self) -> anyhow::Result<()> {
         let progress_bar = ProgressBar::new_spinner();
-        progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
+        progress_bar.enable_steady_tick(time::Duration::from_millis(120));
 
         progress_bar.set_message("Fetching releases...");
         let releases = types::node::Release::get_all_releases()?;
@@ -85,8 +87,8 @@ impl NueCommand for CommandArguments {
     }
 }
 
-impl std::fmt::Display for VersionInputs {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for VersionInputs {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::VersionString(version) => write!(f, "{version}"),
             Self::Latest => write!(f, "latest"),
@@ -96,7 +98,7 @@ impl std::fmt::Display for VersionInputs {
     }
 }
 
-impl std::str::FromStr for VersionInputs {
+impl str::FromStr for VersionInputs {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

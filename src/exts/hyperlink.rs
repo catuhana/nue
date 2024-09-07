@@ -1,10 +1,12 @@
+use std::fmt;
+
 pub trait Ext {
     fn hyperlink(&self, url: impl ToString) -> String;
 }
 
 impl<T> Ext for T
 where
-    T: ToString,
+    T: fmt::Display,
 {
     fn hyperlink(&self, url: impl ToString) -> String {
         format!(

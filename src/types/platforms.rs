@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug)]
 pub enum Platform {
     #[cfg(target_os = "linux")]
@@ -65,8 +67,8 @@ impl Platform {
     }
 }
 
-impl std::fmt::Display for Platform {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Platform {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             #[cfg(target_os = "linux")]
             Self::Linux(arch) => write!(f, "linux-{arch}"),
@@ -76,8 +78,8 @@ impl std::fmt::Display for Platform {
     }
 }
 
-impl std::fmt::Display for Arch {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Arch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             #[cfg(target_arch = "aarch64")]
             Self::ARM64 => write!(f, "arm64"),
