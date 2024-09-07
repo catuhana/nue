@@ -7,7 +7,6 @@ use crate::utils;
 #[derive(Debug)]
 pub struct Folder {
     system_temp_path: path::PathBuf,
-    pub prefix: String,
     pub uid: String,
 }
 
@@ -23,30 +22,8 @@ impl Folder {
 
         Ok(Self {
             system_temp_path,
-            prefix,
             uid,
         })
-    }
-
-    pub fn find_caches(&self) -> anyhow::Result<Vec<path::PathBuf>> {
-        let mut caches = vec![];
-        for entry in fs::read_dir(&self.system_temp_path)? {
-            let entry = entry?;
-
-            if !entry.path().is_dir() {
-                continue;
-            }
-
-            if entry
-                .file_name()
-                .to_string_lossy()
-                .starts_with(&self.prefix)
-            {
-                caches.push(entry.path());
-            }
-        }
-
-        Ok(caches)
     }
 
     pub fn get_full_path(&self) -> path::PathBuf {

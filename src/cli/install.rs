@@ -1,7 +1,10 @@
 use clap::Args;
 use indicatif::ProgressBar;
 
-use crate::{types, utils};
+use crate::{
+    types,
+    utils::{self, cache},
+};
 
 use super::NueCommand;
 
@@ -33,7 +36,7 @@ impl NueCommand for CommandArguments {
         let releases = types::node::Release::get_all_releases()?;
 
         progress_bar.set_message("Filtering releases...");
-        let latest_release = match &self.version {
+        let selected_release = match &self.version {
             VersionInputs::VersionString(version) => releases
                 .iter()
                 .find(|release| format!("{}", release.version).starts_with(version)),
@@ -48,7 +51,7 @@ impl NueCommand for CommandArguments {
         };
         progress_bar.finish_and_clear();
 
-        match latest_release {
+        match selected_release {
             Some(release) => {
                 if release.check_installed()? && !self.force {
                     println!(
@@ -58,7 +61,13 @@ impl NueCommand for CommandArguments {
                     return Ok(());
                 }
 
-                release.install()?;
+                if release
+                    .install_from_cache(cache::find_cached_node_downloads()?)
+                    .is_err()
+                {
+                    release.install()?;
+                }
+
                 println!("Node v{} is now installed!", release.version);
 
                 if !utils::check::path_contains(".nue/node/bin")? {

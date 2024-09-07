@@ -1,4 +1,4 @@
-use std::{io::Read, process, time};
+use std::{io::Read, path, process, time};
 
 use dircpy::CopyBuilder;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -26,20 +26,6 @@ impl NodeRelease {
     pub fn install(&self) -> anyhow::Result<()> {
         if !self.is_supported_by_current_platform() {
             anyhow::bail!("This release is not supported by the current platform.");
-        }
-
-        let nue_node_path = NUE_PATH.join("node");
-        let temporary_folder = types::temp::Folder::new()?;
-
-        for cache in temporary_folder.find_caches()? {
-            let cached_node = cache.join(self.get_archive_string());
-            if cached_node.try_exists()? {
-                CopyBuilder::new(cached_node, nue_node_path)
-                    .overwrite(true)
-                    .run()?;
-
-                return Ok(());
-            }
         }
 
         let mut response = reqwest::blocking::get(self.get_download_url())?;
@@ -76,20 +62,42 @@ impl NodeRelease {
         progress_bar.set_message("Decoding archive...");
         let decoded = liblzma::decode_all(file_chunks.as_slice())?;
 
+        let temporary_folder = types::temp::Folder::new()?;
+
         progress_bar.set_message("Unpacking archive...");
         Archive::new(decoded.as_slice()).unpack(temporary_folder.get_full_path())?;
         CopyBuilder::new(
             temporary_folder
                 .get_full_path()
                 .join(self.get_archive_string()),
-            nue_node_path,
+            NUE_PATH.join("node"),
         )
         .overwrite(true)
         .run()?;
-
         progress_bar.finish_and_clear();
 
         Ok(())
+    }
+
+    pub fn install_from_cache(&self, cached_downloads: Vec<path::PathBuf>) -> anyhow::Result<()> {
+        let progress_bar = ProgressBar::new_spinner();
+        progress_bar.enable_steady_tick(time::Duration::from_millis(120));
+
+        progress_bar.set_message("Looking for caches to install from...");
+        for cache in cached_downloads {
+            let cached_node = cache.join(self.get_archive_string());
+            if cached_node.try_exists()? {
+                progress_bar.set_message("Installing from cache...");
+                CopyBuilder::new(cached_node, NUE_PATH.join("node"))
+                    .overwrite(true)
+                    .run()?;
+                progress_bar.finish_and_clear();
+
+                return Ok(());
+            }
+        }
+
+        anyhow::bail!("No cached release found.");
     }
 
     pub fn check_installed(&self) -> anyhow::Result<bool> {
