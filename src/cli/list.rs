@@ -63,7 +63,7 @@ impl NueCommand for CommandArguments {
                 })
                 .collect(),
         )
-        .with_page_size(16)
+        .with_page_size(12)
         .prompt_skippable()
         {
             let release = releases
