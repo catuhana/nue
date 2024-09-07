@@ -12,15 +12,14 @@ pub struct CommandArguments;
 impl NueCommand for CommandArguments {
     fn run(&self) -> anyhow::Result<()> {
         let environment_script = include_str!("../../resources/env.sh");
-        let nue_env_path = NUE_PATH.join("env");
 
         if !NUE_PATH.try_exists()? {
             fs::create_dir_all(&*NUE_PATH)?;
+        } else if !NUE_PATH.join("node").try_exists()? {
+            println!("Node is not installed yet and won't be available until its installed. Use `nue install` to install.");
         }
 
-        if !nue_env_path.exists() {
-            fs::write(nue_env_path, environment_script)?;
-        }
+        fs::write(NUE_PATH.join("env"), environment_script)?;
 
         println!(
             "Created env script at `$HOME/.nue/env`. Source it in your shell profile ({}) to use nue.",
