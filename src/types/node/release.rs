@@ -83,7 +83,7 @@ impl NodeRelease {
 
         progress_bar.set_message("Looking for caches to install from...");
         for cache in cached_downloads {
-            if cache.try_exists()? {
+            if cache.try_exists()? && cache.ends_with(&self.get_archive_string()) {
                 progress_bar.set_message("Installing from cache...");
                 CopyBuilder::new(cache, NUE_PATH.join("node"))
                     .overwrite(true)
