@@ -5,7 +5,7 @@ use serde::{de::Visitor, Deserialize, Deserializer};
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Lts {
     CodeName(String),
-    Bool,
+    False,
 }
 
 impl Lts {
@@ -18,7 +18,7 @@ impl fmt::Display for Lts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::CodeName(code_name) => write!(f, "{code_name}"),
-            Self::Bool => write!(f, "false"),
+            Self::False => write!(f, "false"),
         }
     }
 }
@@ -41,7 +41,7 @@ impl<'de> Visitor<'de> for LtsVisitor {
     }
 
     fn visit_bool<E>(self, _value: bool) -> Result<Lts, E> {
-        Ok(Lts::Bool)
+        Ok(Lts::False)
     }
 
     fn visit_str<E>(self, value: &str) -> Result<Lts, E> {

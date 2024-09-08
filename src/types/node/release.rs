@@ -1,13 +1,13 @@
-use std::{env, io::Read, path, process, time};
+use std::{env, io::Read as _, path, process, time};
 
 use binstall_tar::Archive;
 use dircpy::CopyBuilder;
 use indicatif::{ProgressBar, ProgressStyle};
-use serde::{de::Error as DeError, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer};
 
 use crate::{
     constants::{NODE_DISTRIBUTIONS_INDEX_URL, NODE_DISTRIBUTIONS_URL, NODE_GITHUB_URL},
-    exts::HyperlinkExt,
+    exts::HyperlinkExt as _,
     globals::NUE_PATH,
     types,
 };
@@ -157,5 +157,7 @@ where
     D: Deserializer<'de>,
 {
     let s: String = Deserialize::deserialize(deserializer)?;
-    s.trim_start_matches('v').parse().map_err(DeError::custom)
+    s.trim_start_matches('v')
+        .parse()
+        .map_err(serde::de::Error::custom)
 }

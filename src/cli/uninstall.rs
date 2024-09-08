@@ -31,8 +31,8 @@ impl NueCommand for CommandArguments {
 fn files_in_home_containing(substring: &str) -> anyhow::Result<Vec<String>> {
     let home_dir =
         dirs::home_dir().ok_or_else(|| anyhow::anyhow!("failed to get home directory"))?;
-    let mut matching_files = Vec::new();
 
+    let mut matching_files = Vec::new();
     for entry in fs::read_dir(home_dir)? {
         let Ok(entry) = entry else { continue };
 

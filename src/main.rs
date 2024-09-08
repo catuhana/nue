@@ -1,6 +1,6 @@
-use clap::Parser;
+use clap::Parser as _;
 
-use cli::NueCommand;
+use cli::NueCommand as _;
 
 mod cli;
 mod constants;
