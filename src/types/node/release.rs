@@ -63,9 +63,8 @@ impl Release {
         progress_bar.set_message("Decoding archive...");
         let decoded = liblzma::decode_all(file_chunks.as_slice())?;
 
-        let temporary_folder = env::temp_dir().join("nue");
-
         progress_bar.set_message("Unpacking archive...");
+        let temporary_folder = env::temp_dir().join("nue");
         Archive::new(decoded.as_slice()).unpack(&temporary_folder)?;
         CopyBuilder::new(
             temporary_folder.join(self.get_archive_string()),
@@ -85,7 +84,7 @@ impl Release {
         progress_bar.set_message("Looking for caches to install from...");
         for cache in cached_downloads {
             if cache.try_exists()? && cache.ends_with(self.get_archive_string()) {
-                progress_bar.set_message("Installing from cache...");
+                progress_bar.set_message("Unpacking from cache...");
                 CopyBuilder::new(cache, NUE_PATH.join("node"))
                     .overwrite(true)
                     .run()?;
