@@ -14,7 +14,7 @@ lto = "fat"
 anyhow = "1.0.87"
 binstall-tar = "0.4.42"
 clap = { version = "4.5.17", features = ["derive"] }
-dircpy = { git = "https://github.com/catuhana/dircpy", default-features = false }
+dircpy = { version = "0.3.19", default-features = false }
 dirs = "5.0.1"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
 inquire = "0.7.5"
