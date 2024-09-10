@@ -1,7 +1,6 @@
-use std::{env, io::Read as _, path, process, time};
+use std::{io::Read as _, os, path, process, time};
 
 use binstall_tar::Archive;
-use dircpy::CopyBuilder;
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{Deserialize, Deserializer};
 
@@ -64,14 +63,12 @@ impl Release {
         let decoded = liblzma::decode_all(file_chunks.as_slice())?;
 
         progress_bar.set_message("Unpacking archive...");
-        let temporary_folder = env::temp_dir().join("nue");
-        Archive::new(decoded.as_slice()).unpack(&temporary_folder)?;
-        CopyBuilder::new(
-            temporary_folder.join(self.get_archive_string()),
+        Archive::new(decoded.as_slice()).unpack(&*NUE_PATH)?;
+        os::unix::fs::symlink(
+            NUE_PATH.join(self.get_archive_string()),
             NUE_PATH.join("node"),
-        )
-        .overwrite(true)
-        .run()?;
+        )?;
+
         progress_bar.finish_and_clear();
 
         Ok(())
@@ -85,9 +82,7 @@ impl Release {
         for cache in cached_downloads {
             if cache.try_exists()? && cache.ends_with(self.get_archive_string()) {
                 progress_bar.set_message("Unpacking from cache...");
-                CopyBuilder::new(cache, NUE_PATH.join("node"))
-                    .overwrite(true)
-                    .run()?;
+                os::unix::fs::symlink(cache, NUE_PATH.join("node"))?;
                 progress_bar.finish_and_clear();
 
                 return Ok(());

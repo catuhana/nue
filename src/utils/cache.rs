@@ -1,13 +1,16 @@
-use std::{env, fs, path};
+use std::{fs, path};
+
+use crate::globals::NUE_PATH;
 
 pub fn find_cached_node_downloads() -> anyhow::Result<Vec<path::PathBuf>> {
-    let nue_temp_path = env::temp_dir().join("nue");
-
     let mut caches = vec![];
-    for entry in fs::read_dir(&nue_temp_path)? {
+    for entry in fs::read_dir(&*NUE_PATH)? {
         let entry = entry?;
+        let path = entry.path();
 
-        if !entry.path().is_dir() {
+        if !path.is_dir() {
+            continue;
+        } else if path.file_name().unwrap() == "node" {
             continue;
         }
 
