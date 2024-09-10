@@ -4,7 +4,12 @@ use crate::globals::NUE_PATH;
 
 pub fn find_cached_node_downloads() -> anyhow::Result<Vec<path::PathBuf>> {
     let mut caches = vec![];
-    for entry in fs::read_dir(&*NUE_PATH)? {
+
+    let Ok(entries) = fs::read_dir(&*NUE_PATH) else {
+        return Ok(caches);
+    };
+
+    for entry in entries {
         let entry = entry?;
         let path = entry.path();
 
