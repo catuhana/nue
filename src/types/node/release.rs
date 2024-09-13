@@ -1,6 +1,5 @@
 use std::{io::Read as _, os, path, process, time};
 
-use binstall_tar::Archive;
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{Deserialize, Deserializer};
 
@@ -59,15 +58,27 @@ impl Release {
         let progress_bar = ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(time::Duration::from_millis(120));
 
-        progress_bar.set_message("Decoding archive...");
-        let decoded = liblzma::decode_all(file_chunks.as_slice())?;
-
         progress_bar.set_message("Unpacking archive...");
-        Archive::new(decoded.as_slice()).unpack(&*NUE_PATH)?;
+        extract_node_archive(file_chunks.as_slice())?;
+
+        #[cfg(unix)]
         os::unix::fs::symlink(
             NUE_PATH.join(self.get_archive_string()),
             NUE_PATH.join("node"),
         )?;
+        #[cfg(windows)]
+        if let Err(error) = os::windows::fs::symlink_dir(
+            NUE_PATH.join(self.get_archive_string()),
+            NUE_PATH.join("node"),
+        ) {
+            if error.raw_os_error() == Some(1314) {
+                anyhow::bail!(
+                    "Developer mode must be enabled to install nue. More information: https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development"
+                );
+            }
+
+            anyhow::bail!(error);
+        }
 
         progress_bar.finish_and_clear();
 
@@ -82,7 +93,17 @@ impl Release {
         for cache in cached_downloads {
             if cache.try_exists()? && cache.ends_with(self.get_archive_string()) {
                 progress_bar.set_message("Unpacking from cache...");
+
+                #[cfg(unix)]
                 os::unix::fs::symlink(cache, NUE_PATH.join("node"))?;
+                #[cfg(windows)]
+                {
+                    use std::fs;
+
+                    fs::remove_dir_all(NUE_PATH.join("node"))?;
+                    os::windows::fs::symlink_dir(cache, NUE_PATH.join("node"))?;
+                }
+
                 progress_bar.finish_and_clear();
 
                 return Ok(());
@@ -98,7 +119,13 @@ impl Release {
             return Ok(false);
         }
 
+        #[cfg(unix)]
         let version = process::Command::new(nue_node_path.join("bin").join("node"))
+            .arg("--version")
+            .output()?
+            .stdout;
+        #[cfg(windows)]
+        let version = process::Command::new(nue_node_path.join("node.exe"))
             .arg("--version")
             .output()?
             .stdout;
@@ -122,10 +149,13 @@ impl Release {
 
     pub fn get_download_url(&self) -> String {
         format!(
-            "{}/v{}/{}.tar.xz",
+            "{}/v{}/{}.{}",
             NODE_DISTRIBUTIONS_URL,
             self.version,
-            self.get_archive_string()
+            self.get_archive_string(),
+            types::platforms::Platform::current()
+                .expect("unsupported platform")
+                .archive_extension()
         )
     }
 
@@ -134,16 +164,17 @@ impl Release {
     }
 
     pub fn get_archive_string(&self) -> String {
-        format!(
-            "node-v{}-{}",
-            self.version,
-            types::platforms::Platform::get_system_platform()
-        )
+        let platform = types::platforms::Platform::current().expect("unsupported platform");
+
+        format!("node-v{}-{}", self.version, platform.platform_string())
     }
 
     pub fn is_supported_by_current_platform(&self) -> bool {
-        self.files
-            .contains(&types::platforms::Platform::get_system_platform().to_string())
+        self.files.contains(
+            &types::platforms::Platform::current()
+                .expect("unsupported platform")
+                .download_index_platform_string(),
+        )
     }
 }
 
@@ -155,4 +186,25 @@ where
     s.trim_start_matches('v')
         .parse()
         .map_err(serde::de::Error::custom)
+}
+
+fn extract_node_archive(file_chunks: &[u8]) -> Result<(), anyhow::Error> {
+    #[cfg(unix)]
+    {
+        use binstall_tar::Archive;
+        use liblzma::decode_all;
+
+        let decoded = decode_all(file_chunks)?;
+        Archive::new(decoded.as_slice()).unpack(&*NUE_PATH)?;
+    }
+
+    #[cfg(windows)]
+    {
+        use std::io;
+        use zip::ZipArchive;
+
+        ZipArchive::new(io::Cursor::new(file_chunks))?.extract(&*NUE_PATH)?;
+    }
+
+    Ok(())
 }

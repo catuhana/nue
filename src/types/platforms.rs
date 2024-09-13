@@ -1,96 +1,89 @@
 use std::fmt;
 
-#[derive(Debug)]
-pub enum Platform {
-    #[cfg(target_os = "linux")]
-    Linux(Arch),
-    #[cfg(target_os = "macos")]
-    Mac(Arch),
+macro_rules! impl_arch_and_traits {
+    ($type:ident, $($variant:ident => ($const_arch:expr, $node_arch:expr)),+ $(,)?) => {
+        #[derive(Debug)]
+        pub enum $type {
+            $($variant,)+
+        }
+
+        impl $type {
+            pub fn current() -> Option<Self> {
+                match std::env::consts::ARCH {
+                    $($const_arch => Some(Self::$variant),)+
+                    _ => None,
+                }
+            }
+        }
+
+        impl fmt::Display for $type {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                match self {
+                    $(
+                        Self::$variant => write!(f, $node_arch),
+                    )+
+                }
+            }
+        }
+    };
 }
 
+impl_arch_and_traits!(LinuxArch,
+    ARM64 => ("arm64", "arm64"),
+    ARMv7l => ("arm", "armv7l"),
+    Ppc64le => ("powerpc64", "ppc64le"),
+    S390x => ("s390x", "s390x"),
+    X64 => ("x86_64", "x64")
+);
+
+impl_arch_and_traits!(MacArch,
+    ARM64 => ("arm64", "arm64"),
+    X64 => ("x86_64", "x64")
+);
+
+impl_arch_and_traits!(WindowsArch,
+    ARM64 => ("arm64", "arm64"),
+    X86 => ("x86", "x86"),
+    X64 => ("x86_64", "x64")
+);
+
 #[derive(Debug)]
-pub enum Arch {
-    #[cfg(all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos")))]
-    ARM64,
-    #[cfg(all(target_arch = "arm", target_os = "linux"))]
-    ARMv7l,
-    #[cfg(all(target_arch = "powerpc64", target_os = "linux"))]
-    Ppc64le,
-    #[cfg(all(target_arch = "s390x", target_os = "linux"))]
-    S390x,
-    #[cfg(all(target_arch = "x86_64", any(target_os = "linux", target_os = "macos")))]
-    X64,
+pub enum Platform {
+    Linux(LinuxArch),
+    Mac(MacArch),
+    Windows(WindowsArch),
 }
 
 impl Platform {
-    pub const fn get_system_platform() -> Self {
-        #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
-        {
-            Self::Linux(Arch::ARM64)
-        }
-        #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-        {
-            Self::Mac(Arch::ARM64)
-        }
-        #[cfg(all(target_os = "linux", target_arch = "arm"))]
-        {
-            Self::Linux(Arch::ARMv7l)
-        }
-        #[cfg(all(target_os = "macos", target_arch = "arm"))]
-        {
-            Self::Mac(Arch::ARMv7l)
-        }
-        #[cfg(all(target_os = "linux", target_arch = "powerpc64"))]
-        {
-            Self::Linux(Arch::Ppc64le)
-        }
-        #[cfg(all(target_os = "macos", target_arch = "powerpc64"))]
-        {
-            Self::Mac(Arch::Ppc64le)
-        }
-        #[cfg(all(target_os = "linux", target_arch = "s390x"))]
-        {
-            Self::Linux(Arch::S390x)
-        }
-        #[cfg(all(target_os = "macos", target_arch = "s390x"))]
-        {
-            Self::Mac(Arch::S390x)
-        }
-        #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-        {
-            Self::Linux(Arch::X64)
-        }
-        #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-        {
-            Self::Mac(Arch::X64)
+    pub fn current() -> Option<Self> {
+        match std::env::consts::OS {
+            "linux" => Some(Self::Linux(LinuxArch::current()?)),
+            "macos" => Some(Self::Mac(MacArch::current()?)),
+            "windows" => Some(Self::Windows(WindowsArch::current()?)),
+            _ => None,
         }
     }
-}
 
-impl fmt::Display for Platform {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    pub const fn archive_extension(&self) -> &'static str {
         match self {
-            #[cfg(target_os = "linux")]
-            Self::Linux(arch) => write!(f, "linux-{arch}"),
-            #[cfg(target_os = "macos")]
-            Self::Mac(arch) => write!(f, "darwin-{arch}"),
+            Self::Linux(_) | Self::Mac(_) => "tar.xz",
+            Self::Windows(_) => "zip",
         }
     }
-}
 
-impl fmt::Display for Arch {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    pub fn platform_string(&self) -> String {
         match self {
-            #[cfg(target_arch = "aarch64")]
-            Self::ARM64 => write!(f, "arm64"),
-            #[cfg(target_arch = "arm")]
-            Self::ARMv7l => write!(f, "armv7l"),
-            #[cfg(target_arch = "powerpc64")]
-            Self::Ppc64le => write!(f, "ppc64le"),
-            #[cfg(target_arch = "s390x")]
-            Self::S390x => write!(f, "s390x"),
-            #[cfg(target_arch = "x86_64")]
-            Self::X64 => write!(f, "x64"),
+            Self::Linux(arch) => format!("linux-{arch}"),
+            Self::Mac(arch) => format!("darwin-{arch}"),
+            Self::Windows(arch) => format!("win-{arch}"),
+        }
+    }
+
+    pub fn download_index_platform_string(&self) -> String {
+        match self {
+            Self::Linux(arch) => format!("linux-{arch}"),
+            Self::Mac(arch) => format!("osx-{arch}-tar"),
+            Self::Windows(arch) => format!("win-{arch}-7z"),
         }
     }
 }

@@ -1,7 +1,16 @@
 use std::{path::PathBuf, sync::LazyLock};
 
 pub static NUE_PATH: LazyLock<PathBuf> = LazyLock::new(|| {
-    dirs::home_dir()
-        .expect("failed to get home directory")
-        .join(".nue")
+    #[cfg(unix)]
+    {
+        dirs::home_dir()
+            .expect("failed to get home directory")
+            .join(".nue")
+    }
+    #[cfg(windows)]
+    {
+        dirs::data_local_dir()
+            .expect("failed to get data directory")
+            .join(".nue")
+    }
 });
