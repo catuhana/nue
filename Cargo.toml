@@ -11,7 +11,7 @@ strip = "debuginfo"
 lto = "fat"
 
 [dependencies]
-anyhow = "1.0.87"
+anyhow = "1.0.88"
 clap = { version = "4.5.17", features = ["derive"] }
 dirs = "5.0.1"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
