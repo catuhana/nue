@@ -7,7 +7,7 @@ if ($CurrentPath -contains $NuePath) {
   return
 }
 
-$NewPathArray = @($NuePath) + $CurrentPath
-[System.Environment]::SetEnvironmentVariable("Path", $NewPathArray -join ";", [System.EnvironmentVariableTarget]::User)
+$NewPath = @($NuePath) + $CurrentPath
+[System.Environment]::SetEnvironmentVariable("Path", $NewPath -join ";", [System.EnvironmentVariableTarget]::User)
 
 Write-Output "Nue is now added to user path. Restart your shell to start using Node."
