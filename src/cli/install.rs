@@ -63,9 +63,11 @@ impl NueCommand for CommandArguments {
                     return Ok(());
                 }
 
-                match release.install_from_cache(cache::find_cached_node_downloads()?) {
-                    Ok(()) => (),
-                    Err(_) => release.install()?,
+                let cached_downloads = cache::find_cached_node_downloads()?;
+                if cached_downloads.is_empty() {
+                    release.install()?;
+                } else {
+                    release.install_from_cache(cached_downloads)?;
                 }
 
                 println!("Node v{} is now installed!", release.version);

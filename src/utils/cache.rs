@@ -11,6 +11,7 @@ pub fn find_cached_node_downloads() -> anyhow::Result<Vec<path::PathBuf>> {
         if !path.is_dir() {
             continue;
         }
+
         if path.file_name().unwrap() == "node" {
             continue;
         }

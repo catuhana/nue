@@ -1,4 +1,4 @@
-use std::{io::Read as _, os, path, process, time};
+use std::{fs, io::Read as _, os, path, process, time};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{Deserialize, Deserializer};
@@ -61,6 +61,10 @@ impl Release {
         progress_bar.set_message("Unpacking archive...");
         extract_node_archive(file_chunks.as_slice())?;
 
+        if NUE_PATH.join("node").exists() {
+            fs::remove_dir_all(NUE_PATH.join("node"))?;
+        }
+
         #[cfg(unix)]
         os::unix::fs::symlink(
             NUE_PATH.join(self.get_archive_string()),
@@ -94,13 +98,15 @@ impl Release {
             if cache.try_exists()? && cache.ends_with(self.get_archive_string()) {
                 progress_bar.set_message("Unpacking from cache...");
 
+                if NUE_PATH.join("node").exists() {
+                    fs::remove_dir_all(NUE_PATH.join("node"))?;
+                }
+
                 #[cfg(unix)]
                 os::unix::fs::symlink(cache, NUE_PATH.join("node"))?;
+
                 #[cfg(windows)]
                 {
-                    use std::fs;
-
-                    fs::remove_dir_all(NUE_PATH.join("node"))?;
                     os::windows::fs::symlink_dir(cache, NUE_PATH.join("node"))?;
                 }
 
