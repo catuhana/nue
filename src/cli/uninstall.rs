@@ -12,17 +12,27 @@ pub struct CommandArguments;
 impl NueCommand for CommandArguments {
     fn run(&self) -> anyhow::Result<()> {
         let nue_node_path = NUE_PATH.join("node");
-        if !nue_node_path.try_exists()? {
-            println!("Node is not installed.");
+
+        if nue_node_path.try_exists()? {
+            fs::remove_dir_all(nue_node_path)?;
+            println!("Node uninstalled successfully.");
+
             return Ok(());
         }
 
-        fs::remove_dir_all(nue_node_path)?;
-        println!("Node uninstalled successfully.");
+        println!("Node is not installed.");
 
-        // TODO: Implement for Windows
-        if utils::check::path_contains(".nue/node/bin")? {
-            println!("Node is still in your `PATH`. Remove the sourced env script from your shell profile ({}).", files_in_home_containing("$HOME/.nue/env")?.join(", "));
+        if utils::check::is_node_in_path()? {
+            let platform_specific_help = if cfg!(unix) {
+                format!(
+                    "Remove the sourced env script from your shell profile ({}).",
+                    files_in_home_containing("$HOME/.nue/env")?.join(", ")
+                )
+            } else {
+                format!("Remove the entry `\\.nue\\node` from your user `Path`.")
+            };
+
+            println!("Node is still in your `PATH`. {platform_specific_help}");
         }
 
         Ok(())

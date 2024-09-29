@@ -72,8 +72,7 @@ impl NueCommand for CommandArguments {
 
                 println!("Node v{} is now installed!", release.version);
 
-                // TODO: Implement for Windows.
-                if !utils::check::path_contains(".nue/node/bin")? {
+                if !utils::check::is_node_in_path()? {
                     println!(
                         "Node is installed, but its path isn't in `PATH`. Run `nue env` to fix it."
                     );
