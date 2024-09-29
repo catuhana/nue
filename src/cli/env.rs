@@ -11,16 +11,15 @@ pub struct CommandArguments;
 
 impl NueCommand for CommandArguments {
     fn run(&self) -> anyhow::Result<()> {
+        if !NUE_PATH.try_exists()? {
+            fs::create_dir_all(&*NUE_PATH)?;
+        } else if !NUE_PATH.join("node").try_exists()? {
+            println!("Node is not installed yet and won't be available until its installed. Use `nue install` to install.");
+        }
+
         #[cfg(unix)]
         {
             let environment_script = include_str!("../../resources/env.sh");
-
-            if !NUE_PATH.try_exists()? {
-                fs::create_dir_all(&*NUE_PATH)?;
-            } else if !NUE_PATH.join("node").try_exists()? {
-                println!("Node is not installed yet and won't be available until its installed. Use `nue install` to install.");
-            }
-
             fs::write(NUE_PATH.join("env"), environment_script)?;
 
             println!(
@@ -32,13 +31,6 @@ impl NueCommand for CommandArguments {
         #[cfg(windows)]
         {
             let environment_script = include_str!("../../resources/env.ps1");
-
-            if !NUE_PATH.try_exists()? {
-                fs::create_dir_all(&*NUE_PATH)?;
-            } else if !NUE_PATH.join("node").try_exists()? {
-                println!("Node is not installed yet and won't be available until its installed. Use `nue install` to install.");
-            }
-
             fs::write(NUE_PATH.join("env.ps1"), environment_script)?;
 
             println!(
@@ -61,11 +53,11 @@ fn available_shell_profiles() -> Vec<&'static str> {
             .map(std::string::ToString::to_string)
     });
 
-    let mut profiles = vec!["~/.profile"];
+    let mut profiles = vec![];
     let additional_profiles = match shell.as_deref() {
         Some("zsh") => vec!["~/.zprofile", "~/.zshenv", "~/.zshrc"],
         Some("bash") => vec!["~/.bash_profile", "~/.bashrc"],
-        _ => vec![],
+        _ => vec!["~/.profile"],
     };
 
     profiles.extend(additional_profiles);

@@ -12,11 +12,7 @@ pub fn find_cached_node_downloads() -> anyhow::Result<Vec<path::PathBuf>> {
             continue;
         }
 
-        if path.file_name().unwrap() == "node" {
-            continue;
-        }
-
-        if entry.file_name().to_string_lossy().starts_with("node") {
+        if entry.file_name().to_string_lossy().starts_with("node-") {
             caches.push(path);
         }
     }

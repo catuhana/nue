@@ -31,7 +31,7 @@ impl Release {
             anyhow::bail!("Failed to download release: {}", response.status());
         }
 
-        let download_progress_bar = ProgressBar::new(response.header("Content-Length").unwrap().parse::<u64>()?)
+        let download_progress_bar = ProgressBar::new(response.header("Content-Length").expect("unexpected `Content-Length` encoding").parse::<u64>()?)
             .with_style(
                 ProgressStyle::default_bar()
                     .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} {bytes_per_sec} ({eta})")?
@@ -77,7 +77,7 @@ impl Release {
         ) {
             if error.raw_os_error() == Some(1314) {
                 anyhow::bail!(
-                    "Developer mode must be enabled to install nue. More information: https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development"
+                    "Developer mode must be enabled to install nue. For more information: https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development"
                 );
             }
 
@@ -149,7 +149,7 @@ impl Release {
             anyhow::bail!("Failed to fetch releases: {}", response.status());
         }
 
-        let releases: Vec<Self> = response.into_json()?;
+        let releases = response.into_json()?;
         Ok(releases)
     }
 
@@ -161,7 +161,7 @@ impl Release {
             self.get_archive_string(),
             types::platforms::Platform::current()
                 .expect("unsupported platform")
-                .archive_extension()
+                .node_archive_extension()
         )
     }
 
@@ -170,16 +170,20 @@ impl Release {
     }
 
     pub fn get_archive_string(&self) -> String {
-        let platform = types::platforms::Platform::current().expect("unsupported platform");
-
-        format!("node-v{}-{}", self.version, platform.platform_string())
+        format!(
+            "node-v{}-{}",
+            self.version,
+            types::platforms::Platform::current()
+                .expect("unsupported platform")
+                .node_platform_string()
+        )
     }
 
     pub fn is_supported_by_current_platform(&self) -> bool {
         self.files.contains(
             &types::platforms::Platform::current()
                 .expect("unsupported platform")
-                .download_index_platform_string(),
+                .node_index_platform_string(),
         )
     }
 }
@@ -188,8 +192,9 @@ fn deserialise_version_v_prefix<'de, D>(deserializer: D) -> Result<node_semver::
 where
     D: Deserializer<'de>,
 {
-    let s: String = Deserialize::deserialize(deserializer)?;
-    s.trim_start_matches('v')
+    let version: String = Deserialize::deserialize(deserializer)?;
+    version
+        .trim_start_matches('v')
         .parse()
         .map_err(serde::de::Error::custom)
 }

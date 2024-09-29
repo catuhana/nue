@@ -1,5 +1,3 @@
-use std::fmt;
-
 macro_rules! impl_arch_and_traits {
     ($type:ident, $($variant:ident => ($const_arch:expr, $node_arch:expr)),+ $(,)?) => {
         #[derive(Debug)]
@@ -14,14 +12,10 @@ macro_rules! impl_arch_and_traits {
                     _ => None,
                 }
             }
-        }
 
-        impl fmt::Display for $type {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            pub const fn node_arch(&self) -> &'static str {
                 match self {
-                    $(
-                        Self::$variant => write!(f, $node_arch),
-                    )+
+                    $(Self::$variant => $node_arch,)+
                 }
             }
         }
@@ -64,26 +58,26 @@ impl Platform {
         }
     }
 
-    pub const fn archive_extension(&self) -> &'static str {
+    pub const fn node_archive_extension(&self) -> &'static str {
         match self {
             Self::Linux(_) | Self::Mac(_) => "tar.xz",
             Self::Windows(_) => "zip",
         }
     }
 
-    pub fn platform_string(&self) -> String {
+    pub fn node_platform_string(&self) -> String {
         match self {
-            Self::Linux(arch) => format!("linux-{arch}"),
-            Self::Mac(arch) => format!("darwin-{arch}"),
-            Self::Windows(arch) => format!("win-{arch}"),
+            Self::Linux(arch) => format!("linux-{}", arch.node_arch()),
+            Self::Mac(arch) => format!("darwin-{}", arch.node_arch()),
+            Self::Windows(arch) => format!("win-{}", arch.node_arch()),
         }
     }
 
-    pub fn download_index_platform_string(&self) -> String {
+    pub fn node_index_platform_string(&self) -> String {
         match self {
-            Self::Linux(arch) => format!("linux-{arch}"),
-            Self::Mac(arch) => format!("osx-{arch}-tar"),
-            Self::Windows(arch) => format!("win-{arch}-7z"),
+            Self::Linux(arch) => format!("linux-{}", arch.node_arch()),
+            Self::Mac(arch) => format!("osx-{}-tar", arch.node_arch()),
+            Self::Windows(arch) => format!("win-{}-7z", arch.node_arch()),
         }
     }
 }

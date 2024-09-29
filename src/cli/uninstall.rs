@@ -20,6 +20,7 @@ impl NueCommand for CommandArguments {
         fs::remove_dir_all(nue_node_path)?;
         println!("Node uninstalled successfully.");
 
+        // TODO: Implement for Windows
         if utils::check::path_contains(".nue/node/bin")? {
             println!("Node is still in your `PATH`. Remove the sourced env script from your shell profile ({}).", files_in_home_containing("$HOME/.nue/env")?.join(", "));
         }
