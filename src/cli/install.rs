@@ -1,4 +1,4 @@
-use std::{ffi, fmt, path, str, time};
+use std::{ffi, fmt, str, time};
 
 use clap::Args;
 use indicatif::ProgressBar;
@@ -76,7 +76,7 @@ impl NueCommand for CommandArguments {
 
                 println!("Node v{} is now installed!", release.version);
 
-                if !utils::check::is_node_in_path()? {
+                if !utils::check::is_node_in_path() {
                     println!(
                         "Node is installed, but its path isn't in `PATH`. Run `nue env` to fix it."
                     );

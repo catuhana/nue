@@ -22,14 +22,14 @@ impl NueCommand for CommandArguments {
 
         println!("Node is not installed.");
 
-        if utils::check::is_node_in_path()? {
+        if utils::check::is_node_in_path() {
             let platform_specific_help = if cfg!(unix) {
                 format!(
                     "Remove the sourced env script from your shell profile ({}).",
                     files_in_home_containing("$HOME/.nue/env")?.join(", ")
                 )
             } else {
-                format!("Remove the entry `\\.nue\\node` from your user `Path`.")
+                "Remove the entry `\\.nue\\node` from your user `Path`.".to_string()
             };
 
             println!("Node is still in your `PATH`. {platform_specific_help}");

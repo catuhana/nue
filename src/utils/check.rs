@@ -1,6 +1,6 @@
 use std::env;
 
-pub fn is_node_in_path() -> anyhow::Result<bool> {
+pub fn is_node_in_path() -> bool {
     match env::var("PATH") {
         Ok(path) => {
             let node_path_string = if cfg!(unix) {
@@ -11,12 +11,12 @@ pub fn is_node_in_path() -> anyhow::Result<bool> {
 
             for path in env::split_paths(&path) {
                 if path.ends_with(node_path_string) {
-                    return Ok(true);
+                    return true;
                 }
             }
 
-            return Ok(false);
+            false
         }
-        Err(_) => Ok(false),
+        Err(_) => false,
     }
 }
