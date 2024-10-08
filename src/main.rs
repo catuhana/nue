@@ -15,6 +15,7 @@ fn main() -> anyhow::Result<()> {
         cli::Subcommands::Uninstall(uninstall) => uninstall.run(),
         cli::Subcommands::List(list) => list.run(),
         cli::Subcommands::Env(env) => env.run(),
+        cli::Subcommands::Clean(clean) => clean.run(),
     }?;
 
     Ok(())

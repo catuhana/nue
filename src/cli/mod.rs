@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 
+mod clean;
 mod env;
 mod install;
 mod list;
@@ -19,7 +20,7 @@ pub struct Cli {
 #[derive(Subcommand, Debug)]
 pub enum Subcommands {
     /// Install or update Node.
-    #[command(alias = "update")]
+    #[command(alias = "update", alias = "use")]
     Install(install::CommandArguments),
     /// Uninstall Node.
     Uninstall(uninstall::CommandArguments),
@@ -27,4 +28,6 @@ pub enum Subcommands {
     List(list::CommandArguments),
     /// Generate environment script.
     Env(env::CommandArguments),
+    /// Clean up downloaded releases cache.
+    Clean(clean::CommandArguments),
 }
