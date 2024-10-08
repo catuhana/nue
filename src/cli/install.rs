@@ -1,4 +1,4 @@
-use std::{fmt, str, time};
+use std::{ffi, fmt, path, str, time};
 
 use clap::Args;
 use indicatif::ProgressBar;
@@ -64,10 +64,14 @@ impl NueCommand for CommandArguments {
                 }
 
                 let cached_downloads = cache::find_cached_node_downloads()?;
-                if cached_downloads.is_empty() {
-                    release.install()?;
-                } else {
+                if cached_downloads
+                    .iter()
+                    .map(|path| path.file_name())
+                    .any(|file| file == Some(ffi::OsStr::new(&release.get_archive_string())))
+                {
                     release.install_from_cache(cached_downloads)?;
+                } else {
+                    release.install()?;
                 }
 
                 println!("Node v{} is now installed!", release.version);

@@ -6,7 +6,7 @@ use serde::{Deserialize, Deserializer};
 use crate::{
     constants::{NODE_DISTRIBUTIONS_INDEX_URL, NODE_DISTRIBUTIONS_URL, NODE_GITHUB_URL},
     exts::HyperlinkExt as _,
-    globals::NUE_PATH,
+    globals::{NUE_PATH, NUE_RELEASES_PATH},
     types,
 };
 
@@ -67,12 +67,12 @@ impl Release {
 
         #[cfg(unix)]
         os::unix::fs::symlink(
-            NUE_PATH.join(self.get_archive_string()),
+            NUE_RELEASES_PATH.join(self.get_archive_string()),
             NUE_PATH.join("node"),
         )?;
         #[cfg(windows)]
         if let Err(error) = os::windows::fs::symlink_dir(
-            NUE_PATH.join(self.get_archive_string()),
+            NUE_RELEASES_PATH.join(self.get_archive_string()),
             NUE_PATH.join("node"),
         ) {
             if error.raw_os_error() == Some(1314) {
@@ -200,13 +200,17 @@ where
 }
 
 fn extract_node_archive(file_chunks: &[u8]) -> Result<(), anyhow::Error> {
+    if !NUE_RELEASES_PATH.try_exists()? {
+        fs::create_dir_all(&*NUE_RELEASES_PATH)?;
+    }
+
     #[cfg(unix)]
     {
         use binstall_tar::Archive;
         use liblzma::decode_all;
 
         let decoded = decode_all(file_chunks)?;
-        Archive::new(decoded.as_slice()).unpack(&*NUE_PATH)?;
+        Archive::new(decoded.as_slice()).unpack(&*NUE_RELEASES_PATH)?;
     }
 
     #[cfg(windows)]
@@ -214,7 +218,7 @@ fn extract_node_archive(file_chunks: &[u8]) -> Result<(), anyhow::Error> {
         use std::io;
         use zip::ZipArchive;
 
-        ZipArchive::new(io::Cursor::new(file_chunks))?.extract(&*NUE_PATH)?;
+        ZipArchive::new(io::Cursor::new(file_chunks))?.extract(&*NUE_RELEASES_PATH)?;
     }
 
     Ok(())

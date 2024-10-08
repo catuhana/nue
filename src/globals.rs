@@ -14,3 +14,5 @@ pub static NUE_PATH: LazyLock<PathBuf> = LazyLock::new(|| {
             .join(".nue")
     }
 });
+
+pub static NUE_RELEASES_PATH: LazyLock<PathBuf> = LazyLock::new(|| NUE_PATH.join("releases"));
