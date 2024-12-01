@@ -34,7 +34,7 @@ impl NueCommand for CommandArguments {
             fs::write(NUE_PATH.join("env.ps1"), environment_script)?;
 
             println!(
-                "Created env script at `%LocalAppData%\\.nue\\env.ps1`. Run this script once to add Node binaries to your user path.",
+                "Created env script at `%LocalAppData%\\nue\\env.ps1`. Run this script once to add Node binaries to your user path.",
             );
         }
 

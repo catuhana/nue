@@ -1,4 +1,4 @@
-$NuePath = "$env:LOCALAPPDATA\.nue\node"
+$NuePath = "$env:LOCALAPPDATA\nue\node"
 
 $CurrentPath = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User) -split ';'
 

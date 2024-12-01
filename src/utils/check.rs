@@ -6,7 +6,7 @@ pub fn is_node_in_path() -> bool {
             let node_path_string = if cfg!(unix) {
                 ".nue/node/bin"
             } else {
-                ".nue\\\\\\node"
+                "nue\\\\\\node"
             };
 
             for path in env::split_paths(&path) {

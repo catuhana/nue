@@ -29,7 +29,7 @@ impl NueCommand for CommandArguments {
                     files_in_home_containing("$HOME/.nue/env")?.join(", ")
                 )
             } else {
-                "Remove the entry `\\.nue\\node` from your user `Path`.".to_string()
+                "Remove the entry `\\nue\\node` from your user `Path`.".to_string()
             };
 
             println!("Node is still in your `PATH`. {platform_specific_help}");

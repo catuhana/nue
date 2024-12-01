@@ -11,7 +11,7 @@ pub static NUE_PATH: LazyLock<PathBuf> = LazyLock::new(|| {
     {
         dirs::data_local_dir()
             .expect("failed to get data directory")
-            .join(".nue")
+            .join("nue")
     }
 });
 
