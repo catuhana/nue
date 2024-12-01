@@ -16,11 +16,12 @@ clap = { version = "4.5.20", features = ["derive"] }
 dirs = "5.0.1"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
 inquire = "0.7.5"
-node-semver = { git = "https://github.com/catuhana/node-semver-rs", features = [
-  "serde",
-] }
+node-semver = { git = "https://github.com/felipesere/node-semver-rs" }
 serde = { version = "1.0.210", features = ["derive"] }
 ureq = { version = "2.10.1", features = ["json"] }
+
+[patch."https://github.com/felipesere/node-semver-rs"]
+node-semver = { git = "https://github.com/catuhana/node-semver-rs" }
 
 [target.'cfg(unix)'.dependencies]
 binstall-tar = "0.4.42"
