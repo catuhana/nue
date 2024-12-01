@@ -28,4 +28,6 @@ binstall-tar = "0.4.42"
 liblzma = "0.3.4"
 
 [target.'cfg(windows)'.dependencies]
-zip = "2.2.0"
+# Let's pin its version because the GitHub
+# source is not accessible anymore.
+sevenz-rust = "=0.6.1"

@@ -61,7 +61,7 @@ impl Platform {
     pub const fn node_archive_extension(&self) -> &'static str {
         match self {
             Self::Linux(_) | Self::Mac(_) => "tar.xz",
-            Self::Windows(_) => "zip",
+            Self::Windows(_) => "7z",
         }
     }
 

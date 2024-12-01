@@ -214,10 +214,10 @@ fn extract_node_archive(file_chunks: &[u8]) -> Result<(), anyhow::Error> {
 
     #[cfg(windows)]
     {
+        use sevenz_rust::decompress;
         use std::io;
-        use zip::ZipArchive;
 
-        ZipArchive::new(io::Cursor::new(file_chunks))?.extract(&*NUE_RELEASES_PATH)?;
+        decompress(io::Cursor::new(file_chunks), &*NUE_RELEASES_PATH)?;
     }
 
     Ok(())
