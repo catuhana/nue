@@ -70,6 +70,7 @@ impl Release {
             NUE_RELEASES_PATH.join(self.get_archive_string()),
             NUE_PATH.join("node"),
         )?;
+
         #[cfg(windows)]
         if let Err(error) = os::windows::fs::symlink_dir(
             NUE_RELEASES_PATH.join(self.get_archive_string()),
@@ -106,9 +107,7 @@ impl Release {
                 os::unix::fs::symlink(cache, NUE_PATH.join("node"))?;
 
                 #[cfg(windows)]
-                {
-                    os::windows::fs::symlink_dir(cache, NUE_PATH.join("node"))?;
-                }
+                os::windows::fs::symlink_dir(cache, NUE_PATH.join("node"))?;
 
                 progress_bar.finish_and_clear();
 
