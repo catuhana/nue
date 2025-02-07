@@ -2,6 +2,7 @@ use std::{fs, io::Read as _, os, path, process, time};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{Deserialize, Deserializer};
+use ureq::http::StatusCode;
 
 use crate::{
     constants::{NODE_DISTRIBUTIONS_INDEX_URL, NODE_DISTRIBUTIONS_URL, NODE_GITHUB_URL},
@@ -26,12 +27,12 @@ impl Release {
             anyhow::bail!("This release is not supported by the current platform.");
         }
 
-        let response = ureq::get(&self.get_download_url()).call()?;
-        if !response.status() == 200 {
+        let mut response = ureq::get(&self.get_download_url()).call()?;
+        if response.status() != StatusCode::OK {
             anyhow::bail!("Failed to download release: {}", response.status());
         }
 
-        let download_progress_bar = ProgressBar::new(response.header("Content-Length").expect("unexpected `Content-Length` encoding").parse::<u64>()?)
+        let download_progress_bar = ProgressBar::new(u64::try_from(response.headers().get("Content-Length").expect("Missing `Content-Length` header.").len())?)
             .with_style(
                 ProgressStyle::default_bar()
                     .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} {bytes_per_sec} ({eta})")?
@@ -44,7 +45,7 @@ impl Release {
         ));
         let mut file_chunks = Vec::new();
         let mut buffer = vec![0; 8192];
-        let mut reader = response.into_reader();
+        let mut reader = response.body_mut().as_reader();
         while let Ok(read_bytes) = reader.read(&mut buffer) {
             if read_bytes == 0 {
                 break;
@@ -143,12 +144,12 @@ impl Release {
     }
 
     pub fn get_all_releases() -> anyhow::Result<Vec<Self>> {
-        let response = ureq::get(NODE_DISTRIBUTIONS_INDEX_URL).call()?;
-        if !response.status() == 200 {
+        let mut response = ureq::get(NODE_DISTRIBUTIONS_INDEX_URL).call()?;
+        if response.status() != StatusCode::OK {
             anyhow::bail!("Failed to fetch releases: {}", response.status());
         }
 
-        let releases = response.into_json()?;
+        let releases = response.body_mut().read_json()?;
         Ok(releases)
     }
 

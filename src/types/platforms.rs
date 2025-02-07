@@ -1,5 +1,5 @@
 macro_rules! impl_arch_and_traits {
-    ($type:ident, $($variant:ident => ($const_arch:expr, $node_arch:expr)),+ $(,)?) => {
+    ($type:ident, $($variant:ident => ($std_arch:expr, $node_arch:expr)),+ $(,)?) => {
         #[derive(Debug)]
         pub enum $type {
             $($variant,)+
@@ -8,7 +8,7 @@ macro_rules! impl_arch_and_traits {
         impl $type {
             pub fn current() -> Option<Self> {
                 match std::env::consts::ARCH {
-                    $($const_arch => Some(Self::$variant),)+
+                    $($std_arch => Some(Self::$variant),)+
                     _ => None,
                 }
             }
