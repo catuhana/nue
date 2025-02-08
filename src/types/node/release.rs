@@ -1,6 +1,5 @@
 use std::{fs, io::Read as _, os, path, process};
 
-// use indicatif::{ProgressBar, ProgressStyle};
 use demand::Spinner;
 use serde::{Deserialize, Deserializer};
 use ureq::http::StatusCode;
