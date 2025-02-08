@@ -73,7 +73,7 @@ impl Release {
                               content_length as f64 / BYTES_PER_MB
                           )),
                       ))?;
-                      
+
                       last_update = Instant::now();
                     }
                 }
