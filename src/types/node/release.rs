@@ -1,4 +1,9 @@
-use std::{fs, io::Read as _, os, path, process};
+use std::{
+    fs,
+    io::Read as _,
+    os, path, process,
+    time::{Duration, Instant},
+};
 
 // use indicatif::{ProgressBar, ProgressStyle};
 use demand::Spinner;
@@ -23,6 +28,7 @@ const SPINNER_DOWNLOADING_MESSAGE: fn(&Release, Option<&str>) -> String = |relea
 };
 const BUFFER_SIZE: usize = 1024 * 1024;
 const BYTES_PER_MB: f64 = 1_048_576.0;
+const SPINNER_UPDATE_INTERVAL: Duration = Duration::from_millis(100);
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Release {
@@ -51,6 +57,8 @@ impl Release {
                 let mut buffer = vec![0; BUFFER_SIZE];
                 let mut reader = response.body_mut().as_reader();
 
+                let mut last_update = Instant::now();
+
                 while let Ok(read_bytes) = reader.read(&mut buffer) {
                     if read_bytes == 0 {
                         break;
@@ -58,14 +66,17 @@ impl Release {
 
                     file_chunks.extend_from_slice(&buffer[..read_bytes]);
 
-                    spinner.title(SPINNER_DOWNLOADING_MESSAGE(
-                        self,
-                        Some(&format!("{:.2}/{:.2}MiB",
-                            // TODO: Figure why the FUCK is this broken. 
-                            file_chunks.len() as f64 / BYTES_PER_MB,
-                            file_chunks.capacity() as f64 / BYTES_PER_MB
-                        )),
-                    ))?;
+                    if last_update.elapsed() >= SPINNER_UPDATE_INTERVAL {
+                      spinner.title(SPINNER_DOWNLOADING_MESSAGE(
+                          self,
+                          Some(&format!("{:.2}/{:.2}MiB",
+                              file_chunks.len() as f64 / BYTES_PER_MB,
+                              content_length as f64 / BYTES_PER_MB
+                          )),
+                      ))?;
+                      
+                      last_update = Instant::now();
+                    }
                 }
 
                 spinner.title("Unpacking archive...")?;
