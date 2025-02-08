@@ -5,7 +5,6 @@ use std::{
     time::{Duration, Instant},
 };
 
-// use indicatif::{ProgressBar, ProgressStyle};
 use demand::Spinner;
 use serde::{Deserialize, Deserializer};
 use ureq::http::StatusCode;
