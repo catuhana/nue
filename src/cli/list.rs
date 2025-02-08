@@ -37,7 +37,7 @@ impl NueCommand for CommandArguments {
                     if !release.is_supported_by_current_platform() {
                         return false;
                     }
-        
+
                     match &self.version {
                         VersionInputs::VersionString(version) => format!("{}", release.version).starts_with(version),
                         VersionInputs::Lts(Some(code_name)) => matches!(&release.lts, types::node::Lts::CodeName(name) if *name.to_lowercase() == *code_name),

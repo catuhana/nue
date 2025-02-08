@@ -18,10 +18,7 @@ const SPINNER_DOWNLOADING_MESSAGE: fn(&Release, Option<&str>) -> String = |relea
     format!(
         "Downloading version {}{}",
         release.version.hyperlink(release.get_github_release_url()),
-        progress.map_or_else(
-            String::default,
-            |progress| { format!(" ({progress})") }
-        )
+        progress.map_or_else(String::default, |progress| { format!(" ({progress})") })
     )
 };
 const BUFFER_SIZE: usize = 1024 * 1024;
@@ -90,7 +87,7 @@ impl Release {
                             "Developer mode must be enabled to install nue. For more information: https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development"
                         );
                     }
-                
+
                     anyhow::bail!(error);
                 }
 
