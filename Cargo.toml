@@ -13,9 +13,8 @@ lto = "fat"
 [dependencies]
 anyhow = "1.0.95"
 clap = { version = "4.5.28", features = ["derive"] }
+demand = "1.6.2"
 dirs = "6.0.0"
-indicatif = { version = "0.17.11", features = ["improved_unicode"] }
-inquire = "0.7.5"
 node-semver = { git = "https://github.com/felipesere/node-semver-rs" }
 serde = { version = "1.0.217", features = ["derive"] }
 ureq = { version = "3.0.4", features = ["json"] }

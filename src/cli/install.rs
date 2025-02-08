@@ -1,7 +1,7 @@
-use std::{ffi, fmt, str, time};
+use std::{ffi, fmt, str};
 
 use clap::Args;
-use indicatif::ProgressBar;
+use demand::Spinner;
 
 use crate::{
     types,
@@ -31,27 +31,30 @@ pub struct CommandArguments {
 
 impl NueCommand for CommandArguments {
     fn run(&self) -> anyhow::Result<()> {
-        let progress_bar = ProgressBar::new_spinner();
-        progress_bar.enable_steady_tick(time::Duration::from_millis(120));
+        let mut selected_release: Option<types::node::Release> = None;
+        Spinner::new("Fetching releases...").run(|spinner| -> anyhow::Result<()> {
+            let releases = types::node::Release::get_all_releases()?;
 
-        progress_bar.set_message("Fetching releases...");
-        let releases = types::node::Release::get_all_releases()?;
+            spinner.title("Filtering releases...")?;
+            selected_release = match &self.version {
+                VersionInputs::VersionString(version) => releases
+                    .iter()
+                    .find(|release| format!("{}", release.version).starts_with(version)),
+                VersionInputs::Lts(Some(code_name)) => releases.iter().find(|release| {
+                    matches!(
+                        &release.lts,
+                        types::node::Lts::CodeName(name) if &name.to_lowercase() == code_name
+                    )
+                }),
+                VersionInputs::Lts(None) => {
+                    releases.iter().find(|release| release.lts.is_code_name())
+                }
+                VersionInputs::Latest => releases.iter().max_by_key(|release| &release.version),
+            }
+            .cloned();
 
-        progress_bar.set_message("Filtering releases...");
-        let selected_release = match &self.version {
-            VersionInputs::VersionString(version) => releases
-                .iter()
-                .find(|release| format!("{}", release.version).starts_with(version)),
-            VersionInputs::Lts(Some(code_name)) => releases.iter().find(|release| {
-                matches!(
-                    &release.lts,
-                    types::node::Lts::CodeName(name) if &name.to_lowercase() == code_name
-                )
-            }),
-            VersionInputs::Lts(None) => releases.iter().find(|release| release.lts.is_code_name()),
-            VersionInputs::Latest => releases.iter().max_by_key(|release| &release.version),
-        };
-        progress_bar.finish_and_clear();
+            Ok(())
+        })??;
 
         match selected_release {
             Some(release) => {
@@ -69,7 +72,7 @@ impl NueCommand for CommandArguments {
                     .map(|path| path.file_name())
                     .any(|file| file == Some(ffi::OsStr::new(&release.get_archive_string())))
                 {
-                    release.install_from_cache(cached_downloads)?;
+                    release.install_from_cache(&cached_downloads)?;
                 } else {
                     release.install()?;
                 }

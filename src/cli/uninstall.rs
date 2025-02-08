@@ -23,14 +23,14 @@ impl NueCommand for CommandArguments {
         println!("Node is not installed.");
 
         if utils::check::is_node_in_path() {
-            let platform_specific_help = if cfg!(unix) {
-                format!(
-                    "Remove the sourced env script from your shell profile ({}).",
-                    files_in_home_containing("$HOME/.nue/env")?.join(", ")
-                )
-            } else {
-                "Remove the entry `\\nue\\node` from your user `Path`.".to_string()
-            };
+            #[cfg(unix)]
+            let platform_specific_help = format!(
+                "Remove the sourced env script from your shell profile ({}).",
+                files_in_home_containing("$HOME/.nue/env")?.join(", ")
+            );
+            #[cfg(windows)]
+            let platform_specific_help =
+                "Remove the entry `\\nue\\node` from your user `Path`.".to_string();
 
             println!("Node is still in your `PATH`. {platform_specific_help}");
         }
@@ -39,6 +39,7 @@ impl NueCommand for CommandArguments {
     }
 }
 
+#[cfg(unix)]
 fn files_in_home_containing(substring: &str) -> anyhow::Result<Vec<String>> {
     let home_dir =
         dirs::home_dir().ok_or_else(|| anyhow::anyhow!("failed to get home directory"))?;

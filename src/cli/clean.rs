@@ -1,7 +1,7 @@
-use std::{fs, time};
+use std::fs;
 
 use clap::Args;
-use indicatif::ProgressBar;
+use demand::Spinner;
 
 use crate::{globals::NUE_PATH, utils::cache};
 
@@ -24,14 +24,15 @@ impl NueCommand for CommandArguments {
             return Ok(());
         }
 
-        let progress_bar = ProgressBar::new_spinner().with_message("Cleaning up...");
-        progress_bar.enable_steady_tick(time::Duration::from_millis(120));
+        Spinner::new("Cleaning up...").run(|_| -> anyhow::Result<()> {
+            for download in cached_downloads {
+                fs::remove_dir_all(download)?;
+            }
 
-        for download in cached_downloads {
-            fs::remove_dir_all(download)?;
-        }
+            Ok(())
+        })??;
 
-        progress_bar.finish_with_message("Cleaned up unused Node downloads.");
+        println!("Cleaned up unused Node downloads.");
 
         Ok(())
     }

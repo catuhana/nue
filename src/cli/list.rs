@@ -1,8 +1,7 @@
-use std::{fmt, str, time};
+use std::{fmt, str};
 
 use clap::Args;
-use indicatif::ProgressBar;
-use inquire::Select;
+use demand::{DemandOption, Select, Spinner};
 
 use crate::types;
 
@@ -29,52 +28,51 @@ pub struct CommandArguments {
 
 impl NueCommand for CommandArguments {
     fn run(&self) -> anyhow::Result<()> {
-        let progress_bar = ProgressBar::new_spinner();
-        progress_bar.enable_steady_tick(time::Duration::from_millis(120));
+        let mut releases: Vec<types::node::Release> = Vec::new();
+        Spinner::new("Fetching releases...").run(|spinner| -> anyhow::Result<()> {
+            let all_releases = types::node::Release::get_all_releases()?;
 
-        progress_bar.set_message("Fetching releases...");
-        let releases = types::node::Release::get_all_releases()?;
+            spinner.title("Filtering releases...")?;
+            releases = all_releases.into_iter().filter(|release| {
+                    if !release.is_supported_by_current_platform() {
+                        return false;
+                    }
+        
+                    match &self.version {
+                        VersionInputs::VersionString(version) => format!("{}", release.version).starts_with(version),
+                        VersionInputs::Lts(Some(code_name)) => matches!(&release.lts, types::node::Lts::CodeName(name) if *name.to_lowercase() == *code_name),
+                        VersionInputs::Lts(None) => release.lts.is_code_name(),
+                        VersionInputs::All => true,
+                    }
+                }).collect();
 
-        progress_bar.set_message("Filtering releases...");
-        let releases: Vec<_> = releases.into_iter().filter(|release| {
-            if !release.is_supported_by_current_platform() {
-                return false;
-            }
-
-            match &self.version {
-                VersionInputs::VersionString(version) => format!("{}", release.version).starts_with(version),
-                VersionInputs::Lts(Some(code_name)) => matches!(&release.lts, types::node::Lts::CodeName(name) if *name.to_lowercase() == *code_name),
-                VersionInputs::Lts(None) => release.lts.is_code_name(),
-                VersionInputs::All => true,
-            }
-        }).collect();
-        progress_bar.finish_and_clear();
+            Ok(())
+        })??;
 
         if releases.is_empty() {
             anyhow::bail!("No release found with given version or LTS code name.");
-        } else if let Ok(Some(selected_version)) = Select::new(
-            "Select Node Version",
-            releases
-                .iter()
-                .map(|release| {
-                    if release.lts.is_code_name() {
-                        format!("v{} ({} LTS)", release.version, release.lts)
-                    } else {
-                        format!("v{}", release.version)
-                    }
-                })
-                .collect(),
-        )
-        .with_page_size(12)
-        .prompt_skippable()
+        } else if let Ok(selected_version) = Select::new("Select Node Version")
+            .filterable(true)
+            .options(
+                releases
+                    .iter()
+                    .map(|release| {
+                        if release.lts.is_code_name() {
+                            DemandOption::new(&release.version).label(
+                                format!("v{} ({} LTS)", release.version, release.lts).as_str(),
+                            )
+                        } else {
+                            DemandOption::new(&release.version)
+                        }
+                    })
+                    .collect(),
+            )
+            .run()
         {
             let release = releases
                 .iter()
-                .find(|release| {
-                    format!("v{}", release.version)
-                        == selected_version.split_whitespace().nth(0).unwrap()
-                })
-                .expect("release not found, somehow.");
+                .find(|release| release.version == *selected_version)
+                .unwrap();
 
             install::CommandArguments {
                 version: install::VersionInputs::VersionString(release.version.to_string()),

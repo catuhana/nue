@@ -1,6 +1,7 @@
-use std::{fs, io::Read as _, os, path, process, time};
+use std::{fs, io::Read as _, os, path, process};
 
-use indicatif::{ProgressBar, ProgressStyle};
+// use indicatif::{ProgressBar, ProgressStyle};
+use demand::Spinner;
 use serde::{Deserialize, Deserializer};
 use ureq::http::StatusCode;
 
@@ -12,6 +13,19 @@ use crate::{
 };
 
 use super::Lts;
+
+const SPINNER_DOWNLOADING_MESSAGE: fn(&Release, Option<&str>) -> String = |release, progress| {
+    format!(
+        "Downloading version {}{}",
+        release.version.hyperlink(release.get_github_release_url()),
+        progress.map_or_else(
+            String::default,
+            |progress| { format!(" ({progress})") }
+        )
+    )
+};
+const BUFFER_SIZE: usize = 1024 * 1024;
+const BYTES_PER_MB: f64 = 1_048_576.0;
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Release {
@@ -32,91 +46,83 @@ impl Release {
             anyhow::bail!("Failed to download release: {}", response.status());
         }
 
-        let download_progress_bar = ProgressBar::new(u64::try_from(response.headers().get("Content-Length").expect("Missing `Content-Length` header.").len())?)
-            .with_style(
-                ProgressStyle::default_bar()
-                    .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} {bytes_per_sec} ({eta})")?
-                    .progress_chars("-Cc·")
-            );
+        Spinner::new(SPINNER_DOWNLOADING_MESSAGE(self, None)).run(
+            |spinner| -> anyhow::Result<()> {
+                let content_length = response.headers().get("Content-Length").unwrap().to_str()?.parse::<usize>()?;
 
-        download_progress_bar.set_message(format!(
-            "Downloading version {}",
-            format!("v{}", self.version).hyperlink(self.get_github_release_url())
-        ));
-        let mut file_chunks = Vec::new();
-        let mut buffer = vec![0; 8192];
-        let mut reader = response.body_mut().as_reader();
-        while let Ok(read_bytes) = reader.read(&mut buffer) {
-            if read_bytes == 0 {
-                break;
-            }
+                let mut file_chunks = Vec::with_capacity(content_length);
+                let mut buffer = vec![0; BUFFER_SIZE];
+                let mut reader = response.body_mut().as_reader();
 
-            file_chunks.extend_from_slice(&buffer[..read_bytes]);
-            download_progress_bar.inc(read_bytes as u64);
-        }
-        download_progress_bar.finish_and_clear();
+                while let Ok(read_bytes) = reader.read(&mut buffer) {
+                    if read_bytes == 0 {
+                        break;
+                    }
 
-        let progress_bar = ProgressBar::new_spinner();
-        progress_bar.enable_steady_tick(time::Duration::from_millis(120));
+                    file_chunks.extend_from_slice(&buffer[..read_bytes]);
 
-        progress_bar.set_message("Unpacking archive...");
-        extract_node_archive(file_chunks.as_slice())?;
+                    spinner.title(SPINNER_DOWNLOADING_MESSAGE(
+                        self,
+                        Some(&format!("{:.2}/{:.2}MiB",
+                            // TODO: Figure why the FUCK is this broken. 
+                            file_chunks.len() as f64 / BYTES_PER_MB,
+                            file_chunks.capacity() as f64 / BYTES_PER_MB
+                        )),
+                    ))?;
+                }
 
-        if NUE_PATH.join("node").exists() {
-            fs::remove_dir_all(NUE_PATH.join("node"))?;
-        }
+                spinner.title("Unpacking archive...")?;
+                extract_node_archive(file_chunks.as_slice())?;
 
-        #[cfg(unix)]
-        os::unix::fs::symlink(
-            NUE_RELEASES_PATH.join(self.get_archive_string()),
-            NUE_PATH.join("node"),
-        )?;
+                #[cfg(unix)]
+                os::unix::fs::symlink(
+                    NUE_RELEASES_PATH.join(self.get_archive_string()),
+                    NUE_PATH.join("node"),
+                )?;
 
-        #[cfg(windows)]
-        if let Err(error) = os::windows::fs::symlink_dir(
-            NUE_RELEASES_PATH.join(self.get_archive_string()),
-            NUE_PATH.join("node"),
-        ) {
-            if error.raw_os_error() == Some(1314) {
-                anyhow::bail!(
-                    "Developer mode must be enabled to install nue. For more information: https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development"
-                );
-            }
+                #[cfg(windows)]
+                if let Err(error) = os::windows::fs::symlink_dir(
+                    NUE_RELEASES_PATH.join(self.get_archive_string()),
+                    NUE_PATH.join("node"),
+                ) {
+                    if error.raw_os_error() == Some(1314) {
+                        anyhow::bail!(
+                            "Developer mode must be enabled to install nue. For more information: https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development"
+                        );
+                    }
+                
+                    anyhow::bail!(error);
+                }
 
-            anyhow::bail!(error);
-        }
-
-        progress_bar.finish_and_clear();
+                Ok(())
+            },
+        )??;
 
         Ok(())
     }
 
-    pub fn install_from_cache(&self, cached_downloads: Vec<path::PathBuf>) -> anyhow::Result<()> {
-        let progress_bar = ProgressBar::new_spinner();
-        progress_bar.enable_steady_tick(time::Duration::from_millis(120));
+    pub fn install_from_cache(&self, cached_downloads: &[path::PathBuf]) -> anyhow::Result<()> {
+        Spinner::new("Looking for a cached release...").run(|spinner| -> anyhow::Result<()> {
+            for cache in cached_downloads {
+                if cache.try_exists()? && cache.ends_with(self.get_archive_string()) {
+                    spinner.title("Unpacking from cache...")?;
 
-        progress_bar.set_message("Looking for caches to install from...");
-        for cache in cached_downloads {
-            if cache.try_exists()? && cache.ends_with(self.get_archive_string()) {
-                progress_bar.set_message("Unpacking from cache...");
+                    if NUE_PATH.join("node").exists() {
+                        fs::remove_dir_all(NUE_PATH.join("node"))?;
+                    }
 
-                if NUE_PATH.join("node").exists() {
-                    fs::remove_dir_all(NUE_PATH.join("node"))?;
+                    #[cfg(unix)]
+                    os::unix::fs::symlink(cache, NUE_PATH.join("node"))?;
+
+                    #[cfg(windows)]
+                    os::windows::fs::symlink_dir(cache, NUE_PATH.join("node"))?;
+
+                    return Ok(());
                 }
-
-                #[cfg(unix)]
-                os::unix::fs::symlink(cache, NUE_PATH.join("node"))?;
-
-                #[cfg(windows)]
-                os::windows::fs::symlink_dir(cache, NUE_PATH.join("node"))?;
-
-                progress_bar.finish_and_clear();
-
-                return Ok(());
             }
-        }
 
-        anyhow::bail!("No cached release found.");
+            anyhow::bail!("No cached release found.");
+        })?
     }
 
     pub fn check_installed(&self) -> anyhow::Result<bool> {
