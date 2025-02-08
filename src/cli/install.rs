@@ -24,7 +24,7 @@ pub struct CommandArguments {
     #[arg(default_value_t = VersionInputs::default())]
     pub version: VersionInputs,
 
-    /// Force re-installation of the entered version.
+    /// Force install.
     #[arg(long)]
     pub force: bool,
 }

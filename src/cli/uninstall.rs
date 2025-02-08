@@ -30,7 +30,7 @@ impl NueCommand for CommandArguments {
             );
             #[cfg(windows)]
             let platform_specific_help =
-                "Remove the entry `\\nue\\node` from your user `Path`.".to_string();
+                r"Remove the entry that ends with `\nue\node` from your user `Path`.".to_string();
 
             println!("Node is still in your `PATH`. {platform_specific_help}");
         }
