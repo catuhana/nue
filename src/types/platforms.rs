@@ -23,7 +23,7 @@ macro_rules! impl_arch_and_traits {
 }
 
 impl_arch_and_traits!(LinuxArch,
-    ARM64 => ("arm64", "arm64"),
+    ARM64 => ("aarch64", "arm64"),
     ARMv7l => ("arm", "armv7l"),
     Ppc64le => ("powerpc64", "ppc64le"),
     S390x => ("s390x", "s390x"),
@@ -31,12 +31,12 @@ impl_arch_and_traits!(LinuxArch,
 );
 
 impl_arch_and_traits!(MacArch,
-    ARM64 => ("arm64", "arm64"),
+    ARM64 => ("aarch64", "arm64"),
     X64 => ("x86_64", "x64")
 );
 
 impl_arch_and_traits!(WindowsArch,
-    ARM64 => ("arm64", "arm64"),
+    ARM64 => ("aarch64", "arm64"),
     X86 => ("x86", "x86"),
     X64 => ("x86_64", "x64")
 );
