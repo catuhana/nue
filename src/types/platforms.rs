@@ -79,8 +79,10 @@ impl Platform {
 
     pub const fn node_archive_extension(&self) -> &'static str {
         match self {
-            #[cfg(any(target_os = "linux", target_os = "macos"))]
-            Self::Linux(_) | Self::Mac(_) => "tar.xz",
+            #[cfg(target_os = "linux")]
+            Self::Linux(_) => "tar.xz",
+            #[cfg(target_os = "macos")]
+            Self::Mac(_) => "tar.xz",
             #[cfg(target_os = "windows")]
             Self::Windows(_) => "7z",
         }
