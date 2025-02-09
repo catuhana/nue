@@ -81,6 +81,7 @@ impl Release {
                 spinner.title("Unpacking archive...")?;
                 extract_node_archive(file_chunks.as_slice())?;
 
+                spinner.title("Linking node folder...")?;
                 #[cfg(unix)]
                 os::unix::fs::symlink(
                     NUE_RELEASES_PATH.join(self.get_archive_string()),
@@ -112,7 +113,7 @@ impl Release {
         Spinner::new("Looking for a cached release...").run(|spinner| -> anyhow::Result<()> {
             for cache in cached_downloads {
                 if cache.try_exists()? && cache.ends_with(self.get_archive_string()) {
-                    spinner.title("Unpacking from cache...")?;
+                    spinner.title("Linking cached version...")?;
 
                     if NUE_PATH.join("node").exists() {
                         fs::remove_dir_all(NUE_PATH.join("node"))?;
