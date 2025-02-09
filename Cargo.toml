@@ -10,6 +10,11 @@ opt-level = "z"
 strip = "debuginfo"
 lto = "fat"
 
+[lints.clippy]
+nursery = "warn"
+unused_trait_names = "warn"
+std_instead_of_core = "warn"
+
 [dependencies]
 anyhow = "1.0.95"
 clap = { version = "4.5.28", features = ["derive"] }

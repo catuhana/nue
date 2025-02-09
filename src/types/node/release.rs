@@ -1,9 +1,6 @@
-use std::{
-    fs,
-    io::Read as _,
-    os, path, process,
-    time::{Duration, Instant},
-};
+use core::time::Duration;
+
+use std::{fs, io::Read as _, os, path, process, time::Instant};
 
 use demand::Spinner;
 use serde::{Deserialize, Deserializer};
