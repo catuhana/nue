@@ -2,8 +2,8 @@
 name = "nue"
 description = "Node installer, made properly."
 version = "0.1.1"
-edition = "2021"
-rust-version = "1.84"
+edition = "2024"
+rust-version = "1.85"
 
 [profile.release]
 opt-level = "z"
@@ -16,22 +16,20 @@ unused_trait_names = "warn"
 std_instead_of_core = "warn"
 
 [dependencies]
-anyhow = "1.0.95"
-clap = { version = "4.5.28", features = ["derive"] }
-demand = "1.6.2"
+anyhow = "1.0.97"
+clap = { version = "4.5.31", features = ["derive"] }
+demand = "1.6.4"
 dirs = "6.0.0"
 node-semver = { git = "https://github.com/felipesere/node-semver-rs" }
-serde = { version = "1.0.217", features = ["derive"] }
-ureq = { version = "3.0.5", features = ["json"] }
+serde = { version = "1.0.219", features = ["derive"] }
+ureq = { version = "3.0.8", features = ["json"] }
 
 [patch."https://github.com/felipesere/node-semver-rs"]
 node-semver = { git = "https://github.com/catuhana/node-semver-rs" }
 
 [target.'cfg(unix)'.dependencies]
 binstall-tar = "0.4.42"
-liblzma = "0.3.5"
+liblzma = "0.3.6"
 
 [target.'cfg(windows)'.dependencies]
-# Let's pin its version because the GitHub
-# source is not accessible anymore.
-sevenz-rust = "=0.6.1"
+sevenz-rust2 = "0.12.0"

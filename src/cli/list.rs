@@ -5,7 +5,7 @@ use demand::{DemandOption, Select, Spinner};
 
 use crate::types;
 
-use super::{install, NueCommand};
+use super::{NueCommand, install};
 
 #[derive(Debug, Default, Clone)]
 enum VersionInputs {

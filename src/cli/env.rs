@@ -14,7 +14,9 @@ impl NueCommand for CommandArguments {
         if !NUE_PATH.try_exists()? {
             fs::create_dir_all(&*NUE_PATH)?;
         } else if !NUE_PATH.join("node").try_exists()? {
-            println!("Node is not installed yet and won't be available until its installed. Use `nue install` to install.");
+            println!(
+                "Node is not installed yet and won't be available until its installed. Use `nue install` to install."
+            );
         }
 
         #[cfg(unix)]

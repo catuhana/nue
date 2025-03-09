@@ -226,7 +226,7 @@ fn extract_node_archive(file_chunks: &[u8]) -> Result<(), anyhow::Error> {
 
     #[cfg(windows)]
     {
-        use sevenz_rust::decompress;
+        use sevenz_rust2::decompress;
         use std::io;
 
         decompress(io::Cursor::new(file_chunks), &*NUE_RELEASES_PATH)?;
