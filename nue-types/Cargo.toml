@@ -1,0 +1,18 @@
+[package]
+name = "nue-types"
+repository.workspace = true
+authors.workspace = true
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+nue-common = { path = "../nue-common" }
+
+anyhow.workspace = true
+node-semver = { workspace = true, features = ["serde"] }
+serde = { workspace = true, features = ["derive"] }
+
+[lints]
+workspace = true
