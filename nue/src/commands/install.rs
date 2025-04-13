@@ -305,13 +305,14 @@ impl core::str::FromStr for VersionInputs {
         match s.as_str() {
             "latest" => Ok(Self::Latest),
             "lts" => Ok(Self::Lts(None)),
-            _ => {
-                if s.parse::<node_semver::Range>().is_ok() {
-                    Ok(Self::VersionString(s))
-                } else {
-                    Ok(Self::Lts(Some(s)))
+            s if s.parse::<node_semver::Range>().is_ok() => {
+                if s.starts_with('v') {
+                    return Ok(Self::VersionString(s[1..].to_string()));
                 }
+
+                Ok(Self::VersionString(s.to_string()))
             }
+            s => Ok(Self::Lts(Some(s.to_string()))),
         }
     }
 }
