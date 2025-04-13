@@ -1,4 +1,4 @@
-use nue_common::globals::{NUE_NODE_PATH, NUE_PATH};
+use nue_common::globals::{ARGV_0, NUE_NODE_PATH, NUE_PATH};
 use nue_resources::create_env_script;
 
 use crate::Command;
@@ -10,7 +10,8 @@ impl Command for Arguments {
     fn run(&self) -> anyhow::Result<()> {
         if !NUE_NODE_PATH.try_exists()? {
             println!(
-                "Node is not installed yet and won't be available until its installed. Use `nue install` to install."
+                "Node is not installed yet and won't be available until its installed. Use `{} install` to install.",
+                &*ARGV_0
             );
         }
 

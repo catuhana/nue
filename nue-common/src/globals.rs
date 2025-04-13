@@ -2,6 +2,9 @@ use std::{path::PathBuf, sync::LazyLock};
 
 use sys_traits::{FsCreateDirAll, impls::RealSys};
 
+pub static ARGV_0: LazyLock<String> =
+    LazyLock::new(|| std::env::args().next().unwrap_or_else(|| "nue".to_string()));
+
 pub static NUE_PATH: LazyLock<PathBuf> = LazyLock::new(|| {
     let path = {
         #[cfg(windows)]

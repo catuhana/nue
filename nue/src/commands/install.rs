@@ -8,7 +8,7 @@ use std::{
 use indicatif::{ProgressBar, ProgressStyle};
 use nue_common::{
     constants::NODE_DISTRIBUTIONS_URL,
-    globals::{NUE_CACHE_PATH, NUE_NODE_PATH, NUE_PATH},
+    globals::{ARGV_0, NUE_CACHE_PATH, NUE_NODE_PATH, NUE_PATH},
 };
 use nue_types::{
     node::{lts::Lts, release::Release},
@@ -83,7 +83,8 @@ impl Command for Arguments {
 
                 if !super::is_node_in_path() {
                     println!(
-                        "Node is installed, but its path isn't in `PATH`. Run `nue env` to fix it."
+                        "Node is installed, but its path isn't in `PATH`. Run `{} env` to fix it.",
+                        &*ARGV_0
                     );
                 }
             }
@@ -102,7 +103,7 @@ impl Arguments {
             .read_json()?)
     }
 
-    fn check_installed() -> anyhow::Result<Option<String>> {
+    fn check_installed<'a>() -> anyhow::Result<Option<String>> {
         if !NUE_NODE_PATH.try_exists()? {
             return Ok(None);
         }
@@ -121,7 +122,9 @@ impl Arguments {
         .output()?
         .stdout;
 
-        Ok(Some(String::from_utf8(version)?.trim().to_string()))
+        Ok(Some(
+            String::from_utf8_lossy(version.trim_ascii()).into_owned(),
+        ))
     }
 
     fn check_cached() -> anyhow::Result<Vec<PathBuf>> {
