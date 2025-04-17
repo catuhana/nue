@@ -109,13 +109,13 @@ impl Arguments {
         }
 
         let stdout = std::process::Command::new(
-            #[cfg(unix)]
-            {
-                NUE_NODE_PATH.join("bin").join("node")
-            },
             #[cfg(windows)]
             {
                 NUE_NODE_PATH.join("node.exe")
+            },
+            #[cfg(unix)]
+            {
+                NUE_NODE_PATH.join("bin").join("node")
             },
         )
         .arg("--version")
@@ -192,6 +192,13 @@ impl ReleaseExt for Release {
             std::fs::remove_dir_all(&cached_file_path)?;
         }
 
+        #[cfg(windows)]
+        {
+            use sevenz_rust2::decompress;
+
+            decompress(std::io::Cursor::new(chunks), &*NUE_CACHE_PATH)?;
+        }
+
         #[cfg(unix)]
         {
             use binstall_tar::Archive;
@@ -199,13 +206,6 @@ impl ReleaseExt for Release {
 
             let decoded = decode_all(chunks)?;
             Archive::new(decoded.as_slice()).unpack(&*NUE_CACHE_PATH)?;
-        }
-
-        #[cfg(windows)]
-        {
-            use sevenz_rust2::decompress;
-
-            decompress(std::io::Cursor::new(chunks), &*NUE_CACHE_PATH)?;
         }
 
         Ok(())
@@ -274,11 +274,11 @@ impl ReleaseExt for Release {
             .join("cache")
             .join(self.get_archive_string(platform));
 
-        #[cfg(unix)]
-        std::os::unix::fs::symlink(cache_path, destination)?;
-
         #[cfg(windows)]
         std::os::windows::fs::symlink_dir(cache_path, destination)?;
+
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(cache_path, destination)?;
 
         Ok(())
     }
