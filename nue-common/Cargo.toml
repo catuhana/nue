@@ -11,7 +11,7 @@ rust-version.workspace = true
 sys_traits = { version = "0.1.8", features = ["real"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.59", features = [
+windows = { version = "0.59", features = [
   "Win32_UI_Shell",
   "Win32_System_Com",
 ] }
