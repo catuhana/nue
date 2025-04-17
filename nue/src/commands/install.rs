@@ -274,8 +274,15 @@ impl ReleaseExt for Release {
             .join("cache")
             .join(self.get_archive_string(platform));
 
-        #[cfg(windows)]
-        std::os::windows::fs::symlink_dir(cache_path, destination)?;
+        if let Err(error) = std::os::windows::fs::symlink_dir(cache_path, destination) {
+            if error.raw_os_error() == Some(1314) {
+                anyhow::bail!(
+                    "Developer mode must be enabled to install nue. For more information: https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development"
+                );
+            }
+
+            anyhow::bail!(error);
+        }
 
         #[cfg(unix)]
         std::os::unix::fs::symlink(cache_path, destination)?;

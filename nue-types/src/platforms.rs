@@ -1,5 +1,5 @@
 macro_rules! impl_arch_and_traits {
-  ($type:ident, $($variant:ident => ($std_arch:expr, $node_arch:expr)),+ $(,)?) => {
+  (for $type:ident, $($variant:ident is ($std_arch:expr, $node_arch:expr)),+ $(,)?) => {
       #[derive(Debug)]
       pub enum $type {
           $($variant,)+
@@ -22,23 +22,23 @@ macro_rules! impl_arch_and_traits {
   };
 }
 
-impl_arch_and_traits!(LinuxArch,
-  ARM64 => ("aarch64", "arm64"),
-  ARMv7l => ("arm", "armv7l"),
-  Ppc64le => ("powerpc64", "ppc64le"),
-  S390x => ("s390x", "s390x"),
-  X64 => ("x86_64", "x64")
+impl_arch_and_traits!(for LinuxArch,
+  ARM64 is ("aarch64", "arm64"),
+  ARMv7l is ("arm", "armv7l"),
+  Ppc64le is ("powerpc64", "ppc64le"),
+  S390x is ("s390x", "s390x"),
+  X64 is ("x86_64", "x64")
 );
 
-impl_arch_and_traits!(MacArch,
-  ARM64 => ("aarch64", "arm64"),
-  X64 => ("x86_64", "x64")
+impl_arch_and_traits!(for MacArch,
+  ARM64 is ("aarch64", "arm64"),
+  X64 is ("x86_64", "x64")
 );
 
-impl_arch_and_traits!(WindowsArch,
-  ARM64 => ("aarch64", "arm64"),
-  X86 => ("x86", "x86"),
-  X64 => ("x86_64", "x64")
+impl_arch_and_traits!(for WindowsArch,
+  ARM64 is ("aarch64", "arm64"),
+  X86 is ("x86", "x86"),
+  X64 is ("x86_64", "x64")
 );
 
 #[derive(Debug)]
