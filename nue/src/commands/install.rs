@@ -103,7 +103,7 @@ impl Arguments {
             .read_json()?)
     }
 
-    fn check_installed<'a>() -> anyhow::Result<Option<String>> {
+    fn check_installed() -> anyhow::Result<Option<String>> {
         if !NUE_NODE_PATH.try_exists()? {
             return Ok(None);
         }
@@ -304,8 +304,8 @@ impl std::str::FromStr for VersionInputs {
             "latest" => Ok(Self::Latest),
             "lts" => Ok(Self::Lts(None)),
             s if s.parse::<node_semver::Range>().is_ok() => {
-                if s.starts_with('v') {
-                    return Ok(Self::VersionString(s[1..].to_string()));
+                if let Some(stripped_version) = s.strip_prefix('v') {
+                    return Ok(Self::VersionString(stripped_version.to_string()));
                 }
 
                 Ok(Self::VersionString(s.to_string()))
