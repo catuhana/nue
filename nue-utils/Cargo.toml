@@ -1,0 +1,13 @@
+[package]
+name = "nue-utils"
+repository.workspace = true
+authors.workspace = true
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true

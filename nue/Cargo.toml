@@ -1,0 +1,31 @@
+[package]
+name = "nue"
+repository.workspace = true
+authors.workspace = true
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+nue-common = { path = "../nue-common" }
+nue-resources = { path = "../nue-resources" }
+nue-types = { path = "../nue-types" }
+nue-utils = { path = "../nue-utils" }
+
+anyhow.workspace = true
+clap = { version = "4.5.36", features = ["derive"] }
+indicatif = "0.17.11"
+node-semver.workspace = true
+ureq = { version = "3.0.11", features = ["json"] }
+
+[target.'cfg(windows)'.dependencies]
+sevenz-rust2 = { version = "0.13.1", default-features = false, features = [
+  "util",
+] }
+
+[target.'cfg(unix)'.dependencies]
+liblzma = { version = "0.4.1", features = ["parallel", "static"] }
+
+[lints]
+workspace = true

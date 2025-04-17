@@ -1,35 +1,25 @@
-[package]
-name = "nue"
-description = "Node installer, made properly."
+[workspace]
+resolver = "3"
+members = ["nue", "nue-common", "nue-resources", "nue-types", "nue-utils"]
+
+[workspace.package]
+repository = "https://github.com/catuhana/nue"
+authors = ["tuhana <tuhana.cat+git@gmail.com>"]
+license = "MPL-2.0"
 version = "0.1.1"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.86"
 
 [profile.release]
+lto = "thin"
 opt-level = "z"
 strip = "debuginfo"
-lto = "fat"
 
-[lints.clippy]
+[workspace.lints.clippy]
 nursery = "warn"
 unused_trait_names = "warn"
-std_instead_of_core = "warn"
 
-[dependencies]
-anyhow = "1.0.97"
-clap = { version = "4.5.31", features = ["derive"] }
-demand = "1.6.4"
-dirs = "6.0.0"
-node-semver = { git = "https://github.com/felipesere/node-semver-rs" }
-serde = { version = "1.0.219", features = ["derive"] }
-ureq = { version = "3.0.8", features = ["json"] }
-
-[patch."https://github.com/felipesere/node-semver-rs"]
-node-semver = { git = "https://github.com/catuhana/node-semver-rs" }
-
-[target.'cfg(unix)'.dependencies]
-binstall-tar = "0.4.42"
-liblzma = "0.3.6"
-
-[target.'cfg(windows)'.dependencies]
-sevenz-rust2 = "0.12.0"
+[workspace.dependencies]
+anyhow = "1.0.98"
+node-semver = { git = "https://github.com/catuhana/node-semver-rs", rev = "0f374a24482d1fa187c6fa664f02b70316cfeef5" }
+serde = "1.0.219"

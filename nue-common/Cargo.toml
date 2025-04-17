@@ -1,0 +1,23 @@
+[package]
+name = "nue-common"
+repository.workspace = true
+authors.workspace = true
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+sys_traits = { version = "0.1.9", features = ["real"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61.1", features = [
+  "Win32_UI_Shell",
+  "Win32_System_Com",
+] }
+
+[target.'cfg(unix)'.dependencies]
+sys_traits = { version = "0.1.9", features = ["real", "libc"] }
+
+[lints]
+workspace = true
