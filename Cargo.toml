@@ -20,6 +20,6 @@ nursery = "warn"
 unused_trait_names = "warn"
 
 [workspace.dependencies]
-anyhow = "1.0.97"
+anyhow = "1.0.98"
 node-semver = { git = "https://github.com/catuhana/node-semver-rs", rev = "0f374a24482d1fa187c6fa664f02b70316cfeef5" }
 serde = "1.0.219"
