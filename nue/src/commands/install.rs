@@ -1,5 +1,5 @@
-use core::convert::Infallible;
 use std::{
+    convert::Infallible,
     ffi::OsStr,
     io::Read as _,
     path::{Path, PathBuf},
@@ -44,7 +44,7 @@ pub enum VersionInputs {
 impl Command for Arguments {
     fn run(&self) -> anyhow::Result<()> {
         let progress = ProgressBar::new_spinner();
-        progress.enable_steady_tick(core::time::Duration::from_millis(100));
+        progress.enable_steady_tick(std::time::Duration::from_millis(100));
 
         progress.set_message("Fetching releases...");
         let releases = Self::fetch_all()?;
@@ -284,8 +284,8 @@ impl ReleaseExt for Release {
     }
 }
 
-impl core::fmt::Display for VersionInputs {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+impl std::fmt::Display for VersionInputs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::VersionString(version) => write!(f, "{version}"),
             Self::Latest => write!(f, "latest"),
@@ -295,7 +295,7 @@ impl core::fmt::Display for VersionInputs {
     }
 }
 
-impl core::str::FromStr for VersionInputs {
+impl std::str::FromStr for VersionInputs {
     type Err = Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

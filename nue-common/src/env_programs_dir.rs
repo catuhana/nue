@@ -25,18 +25,18 @@ impl EnvProgramsDir for RealSys {
             fn wcslen(s: *const u16) -> usize;
         }
 
-        let mut path_raw = core::ptr::null_mut();
+        let mut path_raw = std::ptr::null_mut();
         let result = unsafe {
             SHGetKnownFolderPath(
                 &FOLDERID_UserProgramFiles,
                 KF_FLAG_DEFAULT as u32,
-                core::ptr::null_mut(),
+                std::ptr::null_mut(),
                 &mut path_raw,
             )
         };
 
         let path = if result == S_OK {
-            let path_slice = unsafe { core::slice::from_raw_parts(path_raw, wcslen(path_raw)) };
+            let path_slice = unsafe { std::slice::from_raw_parts(path_raw, wcslen(path_raw)) };
             Some(PathBuf::from(OsString::from_wide(path_slice)))
         } else {
             None

@@ -18,7 +18,6 @@ strip = "debuginfo"
 [workspace.lints.clippy]
 nursery = "warn"
 unused_trait_names = "warn"
-std_instead_of_core = "warn"
 
 [workspace.dependencies]
 anyhow = "1.0.97"
