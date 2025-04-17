@@ -108,7 +108,7 @@ impl Arguments {
             return Ok(None);
         }
 
-        let version = std::process::Command::new(
+        let stdout = std::process::Command::new(
             #[cfg(unix)]
             {
                 NUE_NODE_PATH.join("bin").join("node")
@@ -122,9 +122,7 @@ impl Arguments {
         .output()?
         .stdout;
 
-        Ok(Some(
-            String::from_utf8_lossy(version.trim_ascii()).into_owned(),
-        ))
+        Ok(Some(String::from_utf8(stdout.trim_ascii().to_vec())?))
     }
 
     fn check_cached() -> anyhow::Result<Vec<PathBuf>> {
