@@ -274,6 +274,10 @@ impl ReleaseExt for Release {
             .join("cache")
             .join(self.get_archive_string(platform));
 
+        if destination.as_ref().try_exists()? {
+            std::fs::remove_dir_all(&destination)?;
+        }
+
         if let Err(error) = std::os::windows::fs::symlink_dir(cache_path, destination) {
             if error.raw_os_error() == Some(1314) {
                 anyhow::bail!(
