@@ -9,7 +9,7 @@ pub static NUE_PATH: LazyLock<PathBuf> = LazyLock::new(|| {
     let path = {
         #[cfg(windows)]
         {
-            use crate::env_programs_dir::EnvProgramsDir as _;
+            use sys_traits::EnvProgramsDir as _;
 
             RealSys
                 .env_programs_dir()
