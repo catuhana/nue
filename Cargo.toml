@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["nue", "nue-common", "nue-resources", "nue-types", "nue-utils"]
+members = ["nue", "nue-core", "nue-resources", "nue-types", "nue-utils"]
 
 [workspace.package]
 repository = "https://github.com/catuhana/nue"

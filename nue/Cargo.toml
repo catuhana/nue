@@ -8,7 +8,7 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-nue-common = { path = "../nue-common" }
+nue-core = { path = "../nue-core" }
 nue-resources = { path = "../nue-resources" }
 nue-types = { path = "../nue-types" }
 nue-utils = { path = "../nue-utils" }

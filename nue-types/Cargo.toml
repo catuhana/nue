@@ -8,7 +8,7 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-nue-common = { path = "../nue-common" }
+nue-core = { path = "../nue-core" }
 
 anyhow.workspace = true
 node-semver = { workspace = true, features = ["serde"] }

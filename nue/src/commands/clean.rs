@@ -1,5 +1,5 @@
 use indicatif::{ProgressBar, ProgressStyle};
-use nue_common::globals::{NUE_CACHE_PATH, NUE_NODE_PATH};
+use nue_core::globals::{NUE_CACHE_PATH, NUE_NODE_PATH};
 
 use crate::Command;
 

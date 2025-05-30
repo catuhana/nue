@@ -1,4 +1,4 @@
-use nue_common::globals::{ARGV_0, NUE_NODE_PATH, NUE_PATH};
+use nue_core::globals::{ARGV_0, NUE_NODE_PATH, NUE_PATH};
 use nue_resources::create_env_script;
 
 use crate::Command;

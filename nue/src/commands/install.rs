@@ -6,7 +6,7 @@ use std::{
 };
 
 use indicatif::{ProgressBar, ProgressStyle};
-use nue_common::{
+use nue_core::{
     constants::NODE_DISTRIBUTIONS_URL,
     globals::{ARGV_0, NUE_CACHE_PATH, NUE_NODE_PATH, NUE_PATH},
 };

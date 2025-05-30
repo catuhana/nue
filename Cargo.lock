@@ -698,7 +698,7 @@ dependencies = [
  "indicatif",
  "liblzma",
  "node-semver",
- "nue-common",
+ "nue-core",
  "nue-resources",
  "nue-types",
  "nue-utils",
@@ -707,7 +707,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "nue-common"
+name = "nue-core"
 version = "0.1.1"
 dependencies = [
  "sys_traits",
@@ -726,7 +726,7 @@ version = "0.1.1"
 dependencies = [
  "anyhow",
  "node-semver",
- "nue-common",
+ "nue-core",
  "serde",
 ]
 

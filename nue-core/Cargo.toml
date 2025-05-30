@@ -1,5 +1,5 @@
 [package]
-name = "nue-common"
+name = "nue-core"
 repository.workspace = true
 authors.workspace = true
 license.workspace = true

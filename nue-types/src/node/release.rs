@@ -1,4 +1,4 @@
-use nue_common::constants::{NODE_DISTRIBUTIONS_URL, NODE_GITHUB_URL};
+use nue_core::constants::{NODE_DISTRIBUTIONS_URL, NODE_GITHUB_URL};
 
 use crate::platforms::Platform;
 
