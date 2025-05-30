@@ -8,10 +8,10 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-sys_traits = { version = "0.1.11", features = ["real", "winapi"] }
+sys_traits = { version = "0.1.14", features = ["real", "winapi"] }
 
 [target.'cfg(unix)'.dependencies]
-sys_traits = { version = "0.1.9", features = ["real", "libc"] }
+sys_traits = { version = "0.1.14", features = ["real", "libc"] }
 
 [lints]
 workspace = true

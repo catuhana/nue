@@ -1062,8 +1062,9 @@ dependencies = [
 
 [[package]]
 name = "sys_traits"
-version = "0.1.11"
-source = "git+https://github.com/catuhana/sys_traits?branch=add-env-programs-dir#b01f79b30f7481f2cfd9cdcd0a14b77850e0b589"
+version = "0.1.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0f8c2c55b6b4dd67f0f8df8de9bdf00b16c8ea4fbc4be0c2133d5d3924be5d4"
 dependencies = [
  "libc",
  "sys_traits_macros",
@@ -1073,7 +1074,8 @@ dependencies = [
 [[package]]
 name = "sys_traits_macros"
 version = "0.1.0"
-source = "git+https://github.com/catuhana/sys_traits?branch=add-env-programs-dir#b01f79b30f7481f2cfd9cdcd0a14b77850e0b589"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "181f22127402abcf8ee5c83ccd5b408933fec36a6095cf82cda545634692657e"
 dependencies = [
  "proc-macro2",
  "quote",

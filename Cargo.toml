@@ -23,6 +23,3 @@ unused_trait_names = "warn"
 anyhow = "1.0.98"
 node-semver = { git = "https://github.com/catuhana/node-semver-rs", rev = "0f374a24482d1fa187c6fa664f02b70316cfeef5" }
 serde = "1.0.219"
-
-[patch.crates-io]
-sys_traits = { git = "https://github.com/catuhana/sys_traits", branch = "add-env-programs-dir" }
